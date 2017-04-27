@@ -3,23 +3,59 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"os"
+)
+
+type (
+	Image struct {
+		Url   string `xml:"url"`
+		Title string `xml:"title"`
+		Link  string `xml:"link"`
+	}
+	Enclosure struct {
+		Url string `xml:"url,attr"`
+	}
+	Item struct {
+		XMLName     xml.Name  `xml:"item"`
+		Link        string    `xml:"link"`
+		Title       string    `xml:"title"`
+		Description string    `xml:"description"`
+		Copyright   string    `xml:"copyright"`
+		PubDate     string    `xml:"pubDate"`
+		Enclosure   Enclosure `xml:"enclosure"`
+	}
+	Channel struct {
+		XMLName     xml.Name `xml:"channel"`
+		Title       string   `xml:"title"`
+		Link        string   `xml:"link"`
+		Language    string   `xml:"language"`
+		Copyright   string   `xml:"copyright"`
+		Description string   `xml:"description"`
+		Image       Image    `xml:"image"`
+		Items       Item     `xml:"item"`
+	}
+	Rss struct {
+		XMLName xml.Name `xml:"rss"`
+		Channel Channel  `xml:"channel"`
+	}
 )
 
 func main() {
-	type Enclosure struct {
-		Url string `xml:"url,attr"`
-	}
-	type Item struct {
-		XMLName xml.Name `xml:"item"`
-		Link    string `xml:"link"`
-		Title string `xml:"title"`
-		Description string `xml:"description"`
-		Copyright string `xml:"copyright"`
-		PubDate string `xml:"pubDate"`
-		Enclosure Enclosure `xml:"enclosure"`
-	}
-	v := Item{}
+	v := Rss{}
 	data := `
+
+<rss xmlns:itunes="http://www.itunes.com/DTDs/Podcast-1.0.dtd" version="2.0">
+	<channel>
+		<title>title title</title>
+		<link>http://example.com/</link>
+		<language>ja</language>
+		<copyright>iwag</copyright>
+		<description>aaaaa</description>
+		<image>
+			<url>http://example.com/icon.jpg</url>
+			<title>title title title</title>
+			<link>http://example.com/</link>
+		</image>
 <item>
 <link>
 http://example.com/20170404/1
@@ -36,12 +72,20 @@ http://example.com/20170404/1
 </itunes:summary>
 <itunes:author>iwag</itunes:author>
 </item>
+</channel>
+</rss>
 `
-	err := xml.Unmarshal([]byte(data), &v)
-	if err != nil {
+
+	if err := xml.Unmarshal([]byte(data), &v); err != nil {
 		fmt.Printf("err %v", err)
 		return
 	}
-	fmt.Printf("%v", v)
+	fmt.Printf("%v\n", v)
 
+	encoder := xml.NewEncoder(os.Stdout)
+	encoder.Indent("  ", "   ")
+	if err := encoder.Encode(v); err != nil {
+		fmt.Printf("err %v", err)
+		return
+	}
 }
