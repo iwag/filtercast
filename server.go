@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/xml"
-	"fmt"
-	"os"
+	"net/http"
+
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 type (
@@ -40,10 +42,19 @@ type (
 	}
 )
 
-func main() {
-	v := Rss{}
-	data := `
+var (
+	xmlv Rss
+)
 
+func init() {
+	g := e.Group("/rss")
+	g.Use(middleware.CORS())
+
+	g.GET("", getRss)
+}
+
+func getRss(c echo.Context) error {
+	data := `
 <rss xmlns:itunes="http://www.itunes.com/DTDs/Podcast-1.0.dtd" version="2.0">
 	<channel>
 		<title>title title</title>
@@ -76,16 +87,10 @@ http://example.com/20170404/1
 </rss>
 `
 
-	if err := xml.Unmarshal([]byte(data), &v); err != nil {
-		fmt.Printf("err %v", err)
-		return
+	if err := xml.Unmarshal([]byte(data), &xmlv); err != nil {
+		return c.XML(http.StatusBadRequest, "")
 	}
-	fmt.Printf("%v\n", v)
 
-	encoder := xml.NewEncoder(os.Stdout)
-	encoder.Indent("  ", "   ")
-	if err := encoder.Encode(v); err != nil {
-		fmt.Printf("err %v", err)
-		return
-	}
+	return c.XML(http.StatusOK, xmlv)
 }
+

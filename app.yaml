@@ -1,0 +1,6 @@
+runtime: go                     # see https://cloud.google.com/appengine/docs/go/
+api_version: go1                # used when appengine supports different go versions
+
+handlers:
+  - url: /.*
+    script: _go_app
