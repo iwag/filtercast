@@ -46,13 +46,6 @@ var (
 	xmlv Rss
 )
 
-func init() {
-	g := e.Group("/rss")
-	g.Use(middleware.CORS())
-
-	g.GET("", getRss)
-}
-
 func getRss(c echo.Context) error {
 	data := `
 <rss xmlns:itunes="http://www.itunes.com/DTDs/Podcast-1.0.dtd" version="2.0">
@@ -93,4 +86,14 @@ http://example.com/20170404/1
 
 	return c.XML(http.StatusOK, xmlv)
 }
+
+func init() {
+	e := echo.New()
+	g := e.Group("/rss")
+	g.Use(middleware.CORS())
+
+	g.GET("", getRss)
+	http.Handle("/", e)
+}
+
 
