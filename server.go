@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"io/ioutil"
 )
 
 type (
@@ -45,6 +46,22 @@ type (
 var (
 	xmlv Rss
 )
+
+func getHttp() error {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "http://localhost:3000", nil)
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	_, err = ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	return nil
+}
 
 func getRss(c echo.Context) error {
 	data := `
@@ -95,5 +112,4 @@ func init() {
 	g.GET("", getRss)
 	http.Handle("/", e)
 }
-
 
