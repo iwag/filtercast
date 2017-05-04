@@ -6,6 +6,10 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/urlfetch"
 )
 
 type (
@@ -46,7 +50,15 @@ var (
 	xmlv Rss
 )
 
-func getHttp(c echo.Context) error {
+func requestHttp(c echo.Context) error {
+	ctx := appengine.NewContext(c.Request())
+	client := urlfetch.Client(ctx)
+	resp, err := client.Get("https://www.google.com/")
+	if err != nil {
+		log.Errorf(ctx, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	log.Debugf(ctx, "HTTP GET returned status %v", resp.Status)
 	return nil
 }
 
@@ -97,5 +109,6 @@ func init() {
 	g.Use(middleware.CORS())
 
 	g.GET("", getRss)
+	g.GET("/req", requestHttp)
 	http.Handle("/", e)
 }
