@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/xml"
 	"net/http"
+	"bytes"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -50,53 +51,27 @@ var (
 	xmlv Rss
 )
 
-func requestHttp(c echo.Context) error {
+func requestHttp(c echo.Context) (error, string) {
 	ctx := appengine.NewContext(c.Request())
 	client := urlfetch.Client(ctx)
-	resp, err := client.Get("https://www.google.com/")
+	resp, err := client.Get("http://feeds.rebuild.fm/rebuildfm")
 	if err != nil {
 		log.Errorf(ctx, err.Error(), http.StatusInternalServerError)
-		return err
+		return err, ""
 	}
-	log.Debugf(ctx, "HTTP GET returned status %v", resp.Status)
-	return nil
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
+
+	return nil, buf.String()
 }
 
 func getRss(c echo.Context) error {
-	data := `
-<rss xmlns:itunes="http://www.itunes.com/DTDs/Podcast-1.0.dtd" version="2.0">
-	<channel>
-		<title>title title</title>
-		<link>http://example.com/</link>
-		<language>ja</language>
-		<copyright>iwag</copyright>
-		<description>aaaaa</description>
-		<image>
-			<url>http://example.com/icon.jpg</url>
-			<title>title title title</title>
-			<link>http://example.com/</link>
-		</image>
-<item>
-<link>
-http://example.com/20170404/1
-</link>
-<title>
-<![CDATA[title title title]]>
-</title>
-<description>
-</description>
-<pubDate>Sun, 04 Apr 2017 00:00:00 +0000</pubDate>
-<copyright>iwag</copyright>
-<enclosure url="http://example.com/201704041.mp3" length="0" type="audio/mpeg"/>
-<itunes:summary>
-</itunes:summary>
-<itunes:author>iwag</itunes:author>
-</item>
-</channel>
-</rss>
-`
+	err, body := requestHttp(c)
+	if err != nil {
+		return c.XML(http.StatusBadRequest, "")
+	}
 
-	if err := xml.Unmarshal([]byte(data), &xmlv); err != nil {
+	if err := xml.Unmarshal([]byte(body), &xmlv); err != nil {
 		return c.XML(http.StatusBadRequest, "")
 	}
 
@@ -109,6 +84,5 @@ func init() {
 	g.Use(middleware.CORS())
 
 	g.GET("", getRss)
-	g.GET("/req", requestHttp)
 	http.Handle("/", e)
 }
