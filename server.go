@@ -39,7 +39,8 @@ type (
 		Copyright   string   `xml:"copyright"`
 		Description string   `xml:"description"`
 		Image       Image    `xml:"image"`
-		Items       Item     `xml:"item"`
+		Author      string   `xml:"author"`
+		Items       []Item   `xml:"item"`
 	}
 	Rss struct {
 		XMLName xml.Name `xml:"rss"`
