@@ -1,6 +1,9 @@
-runtime: go                     # see https://cloud.google.com/appengine/docs/go/
-api_version: go1                # used when appengine supports different go versions
+runtime: go
+api_version: go1
 
 handlers:
   - url: /.*
     script: _go_app
+
+env_variables:
+   RSS_URL : http://feeds.rebuild.fm/rebuildfm

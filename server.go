@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"bytes"
 	"encoding/xml"
 	"net/http"
@@ -52,12 +53,12 @@ type (
 
 var (
 	xmlv Rss
+	rssUrl string
 )
 
 func requestHttp(c echo.Context) (error, string) {
 	ctx := appengine.NewContext(c.Request())
-	client := urlfetch.Client(ctx)
-	resp, err := client.Get("http://feeds.rebuild.fm/rebuildfm")
+	resp, err := urlfetch.Client(ctx).Get(rssUrl)
 	if err != nil {
 		log.Errorf(ctx, err.Error(), http.StatusInternalServerError)
 		return err, ""
@@ -82,6 +83,8 @@ func getRss(c echo.Context) error {
 }
 
 func init() {
+	rssUrl = os.Getenv("RSS_URL")
+
 	e := echo.New()
 	g := e.Group("/rss")
 	g.Use(middleware.CORS())
