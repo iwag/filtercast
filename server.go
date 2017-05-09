@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/xml"
 	"net/http"
-	"bytes"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -20,7 +20,9 @@ type (
 		Link  string `xml:"link"`
 	}
 	Enclosure struct {
-		Url string `xml:"url,attr"`
+		Url    string `xml:"url,attr"`
+		Type   string `xml:"type,attr"`
+		Length string `xml:"length,attr"`
 	}
 	Item struct {
 		XMLName     xml.Name  `xml:"item"`
