@@ -7,3 +7,4 @@ handlers:
 
 env_variables:
    RSS_URL : http://feeds.rebuild.fm/rebuildfm
+   TITLE_REGEXP: higepon

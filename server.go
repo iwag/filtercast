@@ -1,10 +1,11 @@
 package main
 
 import (
-	"os"
 	"bytes"
 	"encoding/xml"
 	"net/http"
+	"os"
+	"regexp"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -52,8 +53,9 @@ type (
 )
 
 var (
-	xmlv Rss
-	rssUrl string
+	xmlv    Rss
+	rssUrl  string
+	matcher *regexp.Regexp
 )
 
 func requestHttp(c echo.Context) (error, string) {
@@ -79,11 +81,21 @@ func getRss(c echo.Context) error {
 		return c.XML(http.StatusBadRequest, "")
 	}
 
+	items := []Item{}
+	for _, i := range xmlv.Channel.Items {
+		if matcher.MatchString(i.Title) {
+			ws = append(items, i)
+		}
+	}
+
+	xmlv.Channel.Items = items
+
 	return c.XML(http.StatusOK, xmlv)
 }
 
 func init() {
 	rssUrl = os.Getenv("RSS_URL")
+	matcher = regexp.MustCompile(os.Getenv("TITLE_REGEXP"))
 
 	e := echo.New()
 	g := e.Group("/rss")
