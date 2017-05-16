@@ -58,6 +58,10 @@ var (
 	matcher *regexp.Regexp
 )
 
+const (
+	cacheControlAge = "" // "max-age=3600"
+)
+
 func requestHttp(c echo.Context) (error, string) {
 	ctx := appengine.NewContext(c.Request())
 	resp, err := urlfetch.Client(ctx).Get(rssUrl)
@@ -89,6 +93,10 @@ func getRss(c echo.Context) error {
 	}
 
 	xmlv.Channel.Items = items
+
+	if cacheControlAge != "" {
+		c.Response().Header().Set("Cache-Control", cacheControlAge)
+	}
 
 	return c.XML(http.StatusOK, xmlv)
 }
