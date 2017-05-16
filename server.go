@@ -84,7 +84,7 @@ func getRss(c echo.Context) error {
 	items := []Item{}
 	for _, i := range xmlv.Channel.Items {
 		if matcher.MatchString(i.Title) {
-			ws = append(items, i)
+			items = append(items, i)
 		}
 	}
 
