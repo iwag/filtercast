@@ -56,6 +56,7 @@ var (
 	xmlv    Rss
 	rssUrl  string
 	matcher *regexp.Regexp
+	targetField string
 )
 
 const (
@@ -87,7 +88,9 @@ func getRss(c echo.Context) error {
 
 	items := []Item{}
 	for _, i := range xmlv.Channel.Items {
-		if matcher.MatchString(i.Title) {
+		if targetField == "title" && matcher.MatchString(i.Title) {
+			items = append(items, i)
+		} else if targetField == "description" && matcher.MatchString(i.Description) {
 			items = append(items, i)
 		}
 	}
@@ -103,7 +106,8 @@ func getRss(c echo.Context) error {
 
 func init() {
 	rssUrl = os.Getenv("RSS_URL")
-	matcher = regexp.MustCompile(os.Getenv("TITLE_REGEXP"))
+	targetField = os.Getenv("TARGET_FIELD")
+	matcher = regexp.MustCompile(os.Getenv("REGEXP"))
 
 	e := echo.New()
 	g := e.Group("/rss")
