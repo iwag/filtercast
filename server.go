@@ -106,8 +106,17 @@ func getRss(c echo.Context) error {
 
 func init() {
 	rssUrl = os.Getenv("RSS_URL")
+	if (rssUrl == "") {
+		os.Exit(1)
+	}
 	targetField = os.Getenv("TARGET_FIELD")
+	if (targetField == "") {
+		os.Exit(1)
+	}
 	matcher = regexp.MustCompile(os.Getenv("REGEXP"))
+	if (matcher == nil) {
+		os.Exit(1)
+	}
 
 	e := echo.New()
 	g := e.Group("/rss")
