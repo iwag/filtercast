@@ -11,8 +11,12 @@ import (
 	"google.golang.org/appengine"
 )
 
+type Api struct {
+	client Client
+}
+
 var (
-	client  Client
+	api Api
 	rssUrl  string
 	matcher *regexp.Regexp
 	targetField string
@@ -22,11 +26,11 @@ const (
 	cacheControlAge = "" // "max-age=3600"
 )
 
-func getRss(c echo.Context) error {
+func (api Api) getRss(c echo.Context) error {
 	ctx := appengine.NewContext(c.Request())
 	var xmlv Rss
 	var err error
-	if xmlv, err = client.GetRss(ctx, rssUrl); err != nil {
+	if xmlv, err = api.client.GetRss(ctx, rssUrl); err != nil {
 		return c.XML(http.StatusBadRequest, "")
 	}
 
@@ -62,12 +66,14 @@ func init() {
 		os.Exit(1)
 	}
 
-	client = RssClient{}
+	api = Api{
+		client: RssClient{},
+	}
 
 	e := echo.New()
 	g := e.Group("/rss")
 	g.Use(middleware.CORS())
 
-	g.GET("", getRss)
+	g.GET("", api.getRss)
 	http.Handle("/", e)
 }
