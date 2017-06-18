@@ -1,0 +1,44 @@
+[
+  {
+    "path": "/",
+    "page": "./top",
+    "chunk": "main",
+    "data": {
+    }
+  },
+  {
+    "path": "/error",
+    "page": "./error",
+    "chunk": "main"
+  },
+  {
+    "path": "/home",
+    "page": "./home"
+  },
+  {
+    "path": "/new",
+    "page": "./new"
+  },
+  {
+    "path": "/review/:id",
+    "page": "./review",
+    "data": {
+      "tasks": "GET /v1/user/id/tasks.json"
+    }
+  },
+  {
+    "path": "/signup",
+    "page": "./signup"
+  },
+  {
+    "path": "/tasks/:status(pending|completed)?",
+    "page": "./top"
+  },
+  {
+	"path": "/user/:id",
+	"page": "./user",
+	"data": {
+		"tasks": "GET /v1/user/id/tasks.json"
+	}
+  }
+]
