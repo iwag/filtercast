@@ -5,6 +5,8 @@ import (
 	"google.golang.org/appengine/aetest"
 	"testing"
 	"errors"
+	"github.com/labstack/echo"
+	"net/http/httptest"
 )
 
 type (
@@ -27,4 +29,18 @@ func testNormal(t *testing.T) {
 		t.Fatalf("aetest: %v", err)
 	}
 	defer done()
+
+	api = Api{
+		client: TestNormalClient{},
+	}
+
+	e := echo.New()
+	req := httptest.NewRequest(echo.GET, "/", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	err = api.getRss(c)
+	if err != nil {
+		t.Fatalf("status: %v", err)
+	}
 }
