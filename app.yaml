@@ -9,6 +9,9 @@ handlers:
     static_files: public/index.html
     upload: public/index.html
 
+  - url: /rss/.+/feed.rss
+    script: _go_app
+
   - url: /rss/.+
     static_files: public/index.html
     upload: public/index.html
@@ -17,6 +20,5 @@ handlers:
     static_dir: public
 
 env_variables:
-   RSS_URL : http://feeds.rebuild.fm/rebuildfm
    TARGET_FIELD: title
-   REGEXP: higepon
+   REGEXP: .+

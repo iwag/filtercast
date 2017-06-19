@@ -14,6 +14,7 @@ import (
 
 type Api struct {
 	client Client
+	db ContentDb
 }
 
 type PostContent struct {
@@ -32,7 +33,6 @@ type Status struct {
 
 var (
 	api         Api
-	rssUrl      string
 	matcher     *regexp.Regexp
 	targetField string
 )
@@ -48,8 +48,12 @@ func (api Api) create(c echo.Context) error {
 	var json PostContent
 	if c.Bind(&json) == nil {
 		log.Debugf(ctx, "post:%v", json)
-		// db.Add("", json, ctx)
-		return c.JSON(http.StatusOK, RssStatus{Status: "ok", Id: "111", Url: json.Url})
+		if id, err := api.db.Add("", json, ctx); err != nil {
+			log.Debugf(ctx, "create:%v", err)
+			return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
+		} else {
+			return c.JSON(http.StatusOK, RssStatus{Status: "ok", Id:id, Url: json.Url})
+		}
 	} else {
 		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
 	}
@@ -59,16 +63,26 @@ func (api Api) get(c echo.Context) error {
 	ctx := appengine.NewContext(c.Request())
 	//c.Response().Header().Add("Access-Control-Allow-Origin", "*")
 
-	log.Debugf(ctx, "get rss")
-	// db.Add("", json, ctx)
-	return c.JSON(http.StatusOK, RssStatus{Status: "ok", Id:"111", Url: "http://example.com"})
+	log.Debugf(ctx, "get rss %v", c.Param("id"))
+	if rss, err := api.db.Get(c.Param("id"), ctx); err != nil {
+		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
+	} else {
+		return c.JSON(http.StatusOK, RssStatus{Status: "ok", Id:rss.Id, Url: rss.Url})
+	}
 }
 
 func (api Api) getRss(c echo.Context) error {
 	ctx := appengine.NewContext(c.Request())
 	var xmlv Rss
 	var err error
-	if xmlv, err = api.client.GetRss(ctx, rssUrl); err != nil {
+	var stored Content
+
+	log.Debugf(ctx, "get rss %v", c.Param("id"))
+	if stored, err = api.db.Get(c.Param("id"), ctx); err != nil {
+		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
+	}
+
+	if xmlv, err = api.client.GetRss(ctx, stored.Url); err != nil {
 		return c.XML(http.StatusBadRequest, "")
 	}
 
@@ -91,10 +105,6 @@ func (api Api) getRss(c echo.Context) error {
 }
 
 func init() {
-	rssUrl = os.Getenv("RSS_URL")
-	if rssUrl == "" {
-		os.Exit(1)
-	}
 	targetField = os.Getenv("TARGET_FIELD")
 	if targetField == "" {
 		os.Exit(1)
@@ -106,6 +116,7 @@ func init() {
 
 	api = Api{
 		client: RssClient{},
+		db: ContentDb{},
 	}
 
 	e := echo.New()
@@ -121,7 +132,7 @@ func init() {
 	})
 	g.GET("/:id", api.get)
 
-	g2 := e.Group("")
+	g2 := e.Group("/rss")
 	g2.GET("/:id/feed.rss", api.getRss)
 
 	http.Handle("/", e)
