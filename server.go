@@ -121,7 +121,7 @@ func init() {
 	})
 	g.GET("/:id", api.get)
 
-	g2 := e.Group("/rss")
+	g2 := e.Group("")
 	g2.GET("/:id/feed.rss", api.getRss)
 
 	http.Handle("/", e)

@@ -10,7 +10,7 @@
 	"path": "/rss/:id",
 	"page": "./rss",
 	"data": {
-		"data": "GET http://localhost:8080/api/rss/id"
+		"data": "GET /api/rss/id"
 	}
   }
 ]

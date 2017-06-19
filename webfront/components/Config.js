@@ -1,5 +1,5 @@
 const config = {
-  host: "http://localhost:8080"
+  host: ""
 };
 
 export default config;

@@ -2,8 +2,19 @@ runtime: go
 api_version: go1
 
 handlers:
-  - url: /.*
+  - url: /api/.*
     script: _go_app
+
+  - url: /(|top$)
+    static_files: public/index.html
+    upload: public/index.html
+
+  - url: /rss/.+
+    static_files: public/index.html
+    upload: public/index.html
+
+  - url: /
+    static_dir: public
 
 env_variables:
    RSS_URL : http://feeds.rebuild.fm/rebuildfm
