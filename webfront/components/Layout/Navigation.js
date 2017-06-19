@@ -21,26 +21,10 @@ class Navigation extends React.Component {
   constructor() {
     super();
     this.state = {profile:null};
-    this.load = this.load.bind(this);
   }
 
   componentDidMount() {
     window.componentHandler.upgradeElement(this.root);
-    this.load();
-  }
-
-  load() {
-    $.ajax({
-      url: config.host + "/v1/profile.json",
-      dataType: 'json',
-      cache: false,
-      success: function(data) {
-        this.setState({profile: data});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
   }
 
   componentWillUnmount() {
@@ -49,27 +33,11 @@ class Navigation extends React.Component {
 
   render() {
     var icon, name;
-    if (this.state.profile) {
-      icon = <a className="mdl-navigation__link" href={config.host +"/v1/logout"}><Icon name="exit_to_app"/>Logout</a>;
-      name = <a className="mdl-navigation__link" href={"/user/" + this.state.profile.user_name}>
-      <Icon name="account_box" />{this.state.profile.screen_name} ({this.state.profile.user_name})
-      </a>;
-      return (
-        <nav className="mdl-navigation" ref={node => (this.root = node)}>
-          <Link className="mdl-navigation__link" to="/home">Home</Link>
-          <Link className="mdl-navigation__link" to="/new">New</Link>
-          <Link className="mdl-navigation__link" to={"/review/" + this.state.profile.user_name}>Review</Link>
-            {name}
-            {icon}
-        </nav>
-      );
-    } else {
       return (
         <nav className="mdl-navigation" ref={node => (this.root = node)}>
           <Link className="mdl-navigation__link" to="/">Home</Link>
         </nav>
       );
-    }
   }
 
 }

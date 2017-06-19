@@ -7,38 +7,10 @@
     }
   },
   {
-    "path": "/error",
-    "page": "./error",
-    "chunk": "main"
-  },
-  {
-    "path": "/home",
-    "page": "./home"
-  },
-  {
-    "path": "/new",
-    "page": "./new"
-  },
-  {
-    "path": "/review/:id",
-    "page": "./review",
-    "data": {
-      "tasks": "GET /v1/user/id/tasks.json"
-    }
-  },
-  {
-    "path": "/signup",
-    "page": "./signup"
-  },
-  {
-    "path": "/tasks/:status(pending|completed)?",
-    "page": "./top"
-  },
-  {
-	"path": "/user/:id",
-	"page": "./user",
+	"path": "/rss/:id",
+	"page": "./rss",
 	"data": {
-		"tasks": "GET /v1/user/id/tasks.json"
+		"data": "GET http://localhost:8080/api/rss/id"
 	}
   }
 ]
