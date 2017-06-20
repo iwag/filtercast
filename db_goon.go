@@ -12,11 +12,12 @@ import (
 )
 
 type Content struct {
-	Id         string         `datastore:"-" goon:"id"`
-	Url        string         `datastore:"url"`
-	History    string         `datastore:"history"`
-	CreatedAt  time.Time      `datastore:"created_at"`
-	UpdatedAt  time.Time      `datastore:"updated_at"`
+	Id        string    `datastore:"-" goon:"id"`
+	Url       string    `datastore:"url"`
+	History   string    `datastore:"history"`
+	CreatedAt time.Time `datastore:"created_at"`
+	UpdatedAt time.Time `datastore:"updated_at"`
+	LastId    string    `datastore:"last_id"`
 }
 
 type ContentDb struct {
@@ -33,15 +34,7 @@ func (db *ContentDb) Get(key string, c context.Context) (Content, error) {
 		return Content{}, err
 	}
 
-	v := Content{
-		Id:         key,
-		Url:        w.Url,
-		History:    w.History,
-		CreatedAt:  w.CreatedAt,
-		UpdatedAt:  w.UpdatedAt,
-	}
-
-	return v, nil
+	return w, nil
 }
 
 func (db *ContentDb) GetAll(uid string, is_review bool, duration_s string, c context.Context) ([]Content, error) {
@@ -68,11 +61,12 @@ func (db *ContentDb) GetAll(uid string, is_review bool, duration_s string, c con
 	ws := []Content{}
 	for _, w := range contents {
 		v := Content{
-			Id:         w.Id,
-			Url:        w.Url,
-			History:    w.History,
-			CreatedAt:  w.CreatedAt,
-			UpdatedAt:  w.UpdatedAt,
+			Id:        w.Id,
+			Url:       w.Url,
+			History:   w.History,
+			CreatedAt: w.CreatedAt,
+			UpdatedAt: w.UpdatedAt,
+			LastId:    w.LastId,
 		}
 		ws = append(ws, v)
 	}
@@ -106,11 +100,12 @@ func (db *ContentDb) Add(uid string, w PostContent, c context.Context) (string, 
 	g := goon.FromContext(c)
 
 	wg := Content{
-		Id:         key,
-		Url:        w.Url,
-		History:    "",
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
+		Id:        key,
+		Url:       w.Url,
+		History:   "",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(), // todo should be null
+		LastId:    "",
 	}
 
 	if _, err := g.Put(&wg); err != nil {
@@ -122,42 +117,40 @@ func (db *ContentDb) Add(uid string, w PostContent, c context.Context) (string, 
 	return key, nil
 }
 
-// func (db *ContentDb) Edit(id string, uid string, ew EditContent, c context.Context) (Content, error) {
-//
-// 	g := goon.FromContext(c)
-//
-// 	w := Content{
-// 		Id: id,
-// 	}
-// 	if err := g.Get(w); err != nil {
-// 		log.Debugf(c, "edit:%v", err)
-// 		return Content{}, err
-// 	}
-//
-// 	if ew.Kind != "url" {
-// 		ew.Url = w.Url
-// 	}
-// 	if ew.Kind != "history" {
-// 		ew.History = w.History
-// 	}
-//
-// 	wg := Content{
-// 		Id:         id,
-// 		Url:        w.Url,
-// 		History:    w.History,
-// 		CreatedAt:  w.CreatedAt,
-// 		UpdatedAt:  time.Now(),
-// 	}
-//
-// 	if _, err := g.Put(&wg); err != nil {
-// 		log.Debugf(c, "%v", err)
-// 		return Content{}, err
-// 	}
-//
-// 	w2, err := db.Get(id, uid, c)
-// 	log.Debugf(c, "updated:%v", w2)
-// 	return w2, err
-// }
+func (db *ContentDb) Edit(id string, ew EditContent, c context.Context) (Content, error) {
+
+	g := goon.FromContext(c)
+
+	w := Content{
+		Id: id,
+	}
+	if err := g.Get(w); err != nil {
+		log.Debugf(c, "edit:%v", err)
+		return Content{}, err
+	}
+
+	if ew.Kind != "last_id" {
+		ew.LastId = w.LastId
+	}
+
+	wg := Content{
+		Id:        id,
+		Url:       w.Url,
+		History:   w.History,
+		CreatedAt: w.CreatedAt,
+		UpdatedAt: w.UpdatedAt,
+		LastId:    ew.LastId,
+	}
+
+	if _, err := g.Put(&wg); err != nil {
+		log.Debugf(c, "%v", err)
+		return Content{}, err
+	}
+
+	w2, err := db.Get(id, c)
+	log.Debugf(c, "updated:%v", w2)
+	return w2, err
+}
 
 func (db *ContentDb) Delete(id string, uid string, c context.Context) error {
 	g := goon.FromContext(c)

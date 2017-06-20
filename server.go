@@ -14,17 +14,23 @@ import (
 
 type Api struct {
 	client Client
-	db ContentDb
+	db     ContentDb
 }
 
 type PostContent struct {
 	Url string `form:"url" json:"url" binding:"required"`
 }
 
+type EditContent struct {
+	Kind    string
+	Updated string
+	LastId  string
+}
+
 type RssStatus struct {
 	Status string
-	Url string `form:"url" json:"url" binding:"required"`
-	Id string `form:"id" json:"id" binding:"required"`
+	Url    string `form:"url" json:"url" binding:"required"`
+	Id     string `form:"id" json:"id" binding:"required"`
 }
 
 type Status struct {
@@ -52,7 +58,7 @@ func (api Api) create(c echo.Context) error {
 			log.Debugf(ctx, "create:%v", err)
 			return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
 		} else {
-			return c.JSON(http.StatusOK, RssStatus{Status: "ok", Id:id, Url: json.Url})
+			return c.JSON(http.StatusOK, RssStatus{Status: "ok", Id: id, Url: json.Url})
 		}
 	} else {
 		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
@@ -67,7 +73,7 @@ func (api Api) get(c echo.Context) error {
 	if rss, err := api.db.Get(c.Param("id"), ctx); err != nil {
 		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
 	} else {
-		return c.JSON(http.StatusOK, RssStatus{Status: "ok", Id:rss.Id, Url: rss.Url})
+		return c.JSON(http.StatusOK, RssStatus{Status: "ok", Id: rss.Id, Url: rss.Url})
 	}
 }
 
@@ -116,7 +122,7 @@ func init() {
 
 	api = Api{
 		client: RssClient{},
-		db: ContentDb{},
+		db:     ContentDb{},
 	}
 
 	e := echo.New()
