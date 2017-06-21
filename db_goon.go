@@ -12,12 +12,12 @@ import (
 )
 
 type Content struct {
-	Id        string    `datastore:"-" goon:"id"`
-	Url       string    `datastore:"url"`
-	History   string    `datastore:"history"`
-	CreatedAt time.Time `datastore:"created_at"`
-	UpdatedAt time.Time `datastore:"updated_at"`
-	LastId    string    `datastore:"last_id"`
+	Id             string    `datastore:"-" goon:"id"`
+	Url            string    `datastore:"url"`
+	History        string    `datastore:"history"`
+	CreatedAt      time.Time `datastore:"created_at"`
+	UpdatedAt      time.Time `datastore:"updated_at"`
+	LastLatestDate string    `datastore:"latest_date"`
 }
 
 type ContentDb struct {
@@ -61,12 +61,12 @@ func (db *ContentDb) GetAll(uid string, is_review bool, duration_s string, c con
 	ws := []Content{}
 	for _, w := range contents {
 		v := Content{
-			Id:        w.Id,
-			Url:       w.Url,
-			History:   w.History,
-			CreatedAt: w.CreatedAt,
-			UpdatedAt: w.UpdatedAt,
-			LastId:    w.LastId,
+			Id:             w.Id,
+			Url:            w.Url,
+			History:        w.History,
+			CreatedAt:      w.CreatedAt,
+			UpdatedAt:      w.UpdatedAt,
+			LastLatestDate: w.LastLatestDate,
 		}
 		ws = append(ws, v)
 	}
@@ -100,12 +100,12 @@ func (db *ContentDb) Add(uid string, w PostContent, c context.Context) (string, 
 	g := goon.FromContext(c)
 
 	wg := Content{
-		Id:        key,
-		Url:       w.Url,
-		History:   "",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(), // todo should be null
-		LastId:    "",
+		Id:             key,
+		Url:            w.Url,
+		History:        "",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(), // todo should be null
+		LastLatestDate: w.Date,
 	}
 
 	if _, err := g.Put(&wg); err != nil {
@@ -130,16 +130,16 @@ func (db *ContentDb) Edit(id string, ew EditContent, c context.Context) (Content
 	}
 
 	if ew.Kind != "last_id" {
-		ew.LastId = w.LastId
+		ew.LastLatestDate = w.LastLatestDate
 	}
 
 	wg := Content{
-		Id:        id,
-		Url:       w.Url,
-		History:   w.History,
-		CreatedAt: w.CreatedAt,
-		UpdatedAt: w.UpdatedAt,
-		LastId:    ew.LastId,
+		Id:             id,
+		Url:            w.Url,
+		History:        w.History,
+		CreatedAt:      w.CreatedAt,
+		UpdatedAt:      w.UpdatedAt,
+		LastLatestDate: ew.LastLatestDate,
 	}
 
 	if _, err := g.Put(&wg); err != nil {
