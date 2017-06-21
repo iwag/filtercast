@@ -47,11 +47,11 @@ type (
 )
 
 
-type Client interface { 
+type Client interface {
     GetRss(context.Context, string) (Rss, error)
 }
 
-type RssClient struct{} 
+type RssClient struct{}
 
 func (c RssClient) GetRss(ctx context.Context, url string) (Rss, error) {
 	resp, err := urlfetch.Client(ctx).Get(url)

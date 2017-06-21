@@ -1,9 +1,12 @@
 package main
 
 import (
+	"math/rand"
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -18,13 +21,14 @@ type Api struct {
 }
 
 type PostContent struct {
-	Url string `form:"url" json:"url" binding:"required"`
+	Url  string `form:"url" json:"url" binding:"required"`
+	Date string
 }
 
 type EditContent struct {
-	Kind    string
-	Updated string
-	LastId  string
+	Kind           string
+	Updated        string
+	LastLatestDate string
 }
 
 type RssStatus struct {
@@ -54,6 +58,20 @@ func (api Api) create(c echo.Context) error {
 	var json PostContent
 	if c.Bind(&json) == nil {
 		log.Debugf(ctx, "post:%v", json)
+
+		var xmlv Rss
+		var err error
+		if xmlv, err = api.client.GetRss(ctx, json.Url); err != nil {
+			return c.XML(http.StatusBadRequest, Status{Status: "couldn't request"})
+		}
+		if len(xmlv.Channel.Items) <= 0 {
+			return c.XML(http.StatusBadRequest, Status{Status: "couldn't find rss"})
+		}
+		if xmlv.Channel.Items[0].PubDate == "" {
+			return c.XML(http.StatusBadRequest, Status{Status: "couldn't find pubDate in latest item"})
+		}
+		json.Date = xmlv.Channel.Items[0].PubDate
+
 		if id, err := api.db.Add("", json, ctx); err != nil {
 			log.Debugf(ctx, "create:%v", err)
 			return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
@@ -93,15 +111,29 @@ func (api Api) getRss(c echo.Context) error {
 	}
 
 	items := []Item{}
-	for _, i := range xmlv.Channel.Items {
-		if targetField == "title" && matcher.MatchString(i.Title) {
-			items = append(items, i)
-		} else if targetField == "description" && matcher.MatchString(i.Description) {
-			items = append(items, i)
+	append_ := false
+	for _, it := range xmlv.Channel.Items {
+		if stored.LastLatestDate == it.PubDate {
+			append_ = true
+		} else if append_ {
+			items = append(items, it)
 		}
 	}
 
-	xmlv.Channel.Items = items
+	new_items := []Item{}
+
+	// pick up
+	p := rand.Intn(len(items))
+	new_items = append(new_items, items[p])
+
+	// insert all items u already showed
+	for _, i := range strings.Split(stored.History, ",") {
+		if ii, err := strconv.Atoi(i); err != nil && ii < len(items) {
+			new_items = append(new_items, items[ii])
+		}
+	}
+
+	xmlv.Channel.Items = new_items
 
 	if cacheControlAge != "" {
 		c.Response().Header().Set("Cache-Control", cacheControlAge)
