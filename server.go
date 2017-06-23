@@ -27,8 +27,7 @@ type PostContent struct {
 
 type EditContent struct {
 	Kind           string
-	Updated        string
-	LastLatestDate string
+	History        string
 }
 
 type RssStatus struct {
@@ -128,12 +127,22 @@ func (api Api) getRss(c echo.Context) error {
 
 	// insert all items u already showed
 	for _, i := range strings.Split(stored.History, ",") {
-		if ii, err := strconv.Atoi(i); err != nil && ii < len(items) {
+		if ii, err := strconv.Atoi(i); err == nil && ii < len(items) {
 			new_items = append(new_items, items[ii])
 		}
 	}
-
 	xmlv.Channel.Items = new_items
+
+	// add picked up item to history
+	added := stored.History + strconv.Itoa(p) + ","
+	edited := EditContent{
+		Kind: "history",
+		History: added,
+	}
+	if _, err := api.db.Edit(stored.Id, edited, ctx); err != nil {
+		return c.JSON(http.StatusBadRequest, Status{Status: "edited error"})
+	}
+
 
 	if cacheControlAge != "" {
 		c.Response().Header().Set("Cache-Control", cacheControlAge)

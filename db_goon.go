@@ -124,22 +124,24 @@ func (db *ContentDb) Edit(id string, ew EditContent, c context.Context) (Content
 	w := Content{
 		Id: id,
 	}
-	if err := g.Get(w); err != nil {
+	if err := g.Get(&w); err != nil {
 		log.Debugf(c, "edit:%v", err)
 		return Content{}, err
 	}
 
-	if ew.Kind != "last_id" {
-		ew.LastLatestDate = w.LastLatestDate
+	if ew.Kind == "history" {
+		w.History = ew.History
+	} else {
+		return w, nil
 	}
 
 	wg := Content{
 		Id:             id,
 		Url:            w.Url,
-		History:        w.History,
+		History:        ew.History,
 		CreatedAt:      w.CreatedAt,
 		UpdatedAt:      w.UpdatedAt,
-		LastLatestDate: ew.LastLatestDate,
+		LastLatestDate: w.LastLatestDate,
 	}
 
 	if _, err := g.Put(&wg); err != nil {
