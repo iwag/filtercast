@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -48,6 +49,7 @@ var (
 
 const (
 	cacheControlAge = "" // "max-age=3600"
+	defaultDuration = "10s"
 )
 
 func (api Api) create(c echo.Context) error {
@@ -121,9 +123,25 @@ func (api Api) getRss(c echo.Context) error {
 
 	new_items := []Item{}
 
-	// pick up
-	p := rand.Intn(len(items))
-	new_items = append(new_items, items[p])
+	d, err := time.ParseDuration(defaultDuration)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Status{Status: "duration error"})
+	}
+
+	if time.Now().After(stored.UpdatedAt.Add(d)) {
+		// pick up
+		p := rand.Intn(len(items))
+		new_items = append(new_items, items[p])
+		// add picked up item to history
+		added := stored.History + strconv.Itoa(p) + ","
+		edited := EditContent{
+			Kind: "history",
+			History: added,
+		}
+		if _, err := api.db.Edit(stored.Id, edited, ctx); err != nil {
+			return c.JSON(http.StatusBadRequest, Status{Status: "edited error"})
+		}
+	}
 
 	// insert all items u already showed
 	for _, i := range strings.Split(stored.History, ",") {
@@ -132,17 +150,6 @@ func (api Api) getRss(c echo.Context) error {
 		}
 	}
 	xmlv.Channel.Items = new_items
-
-	// add picked up item to history
-	added := stored.History + strconv.Itoa(p) + ","
-	edited := EditContent{
-		Kind: "history",
-		History: added,
-	}
-	if _, err := api.db.Edit(stored.Id, edited, ctx); err != nil {
-		return c.JSON(http.StatusBadRequest, Status{Status: "edited error"})
-	}
-
 
 	if cacheControlAge != "" {
 		c.Response().Header().Set("Cache-Control", cacheControlAge)

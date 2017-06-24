@@ -140,7 +140,7 @@ func (db *ContentDb) Edit(id string, ew EditContent, c context.Context) (Content
 		Url:            w.Url,
 		History:        ew.History,
 		CreatedAt:      w.CreatedAt,
-		UpdatedAt:      w.UpdatedAt,
+		UpdatedAt:      time.Now(),
 		LastLatestDate: w.LastLatestDate,
 	}
 
