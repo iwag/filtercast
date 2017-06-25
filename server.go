@@ -145,7 +145,6 @@ func (api Api) getRss(c echo.Context) error {
 	}
 
 	// insert all items u already showed
-	log.Debugf(ctx, "stored ! %v %v", strings.Split(stored.History, ","), len(items))
 	history_ids := strings.Split(stored.History, ",")
 	for i := len(history_ids)-1; i>=0; i-- {
 		if ii, err := strconv.Atoi(history_ids[i]); err == nil && ii < len(items) {
@@ -155,6 +154,7 @@ func (api Api) getRss(c echo.Context) error {
 
 	xmlv.Channel.Items = new_items
 
+	c.Response().Header().Set("Content-Type", "application/rss+xml; charset=UTF-8")
 	if cacheControlAge != "" {
 		c.Response().Header().Set("Cache-Control", cacheControlAge)
 	}
