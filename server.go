@@ -48,8 +48,8 @@ var (
 )
 
 const (
-	cacheControlAge = "" // "max-age=3600"
-	defaultDuration = "10s"
+	cacheControlAge = "max-age=3600"
+	defaultDuration = "3600s"
 )
 
 func (api Api) create(c echo.Context) error {
@@ -120,6 +120,7 @@ func (api Api) getRss(c echo.Context) error {
 			items = append(items, it)
 		}
 	}
+	// TODO use copy(items[:i], items)
 
 	new_items := []Item{}
 
@@ -144,11 +145,14 @@ func (api Api) getRss(c echo.Context) error {
 	}
 
 	// insert all items u already showed
-	for _, i := range strings.Split(stored.History, ",") {
-		if ii, err := strconv.Atoi(i); err == nil && ii < len(items) {
+	log.Debugf(ctx, "stored ! %v %v", strings.Split(stored.History, ","), len(items))
+	history_ids := strings.Split(stored.History, ",")
+	for i := len(history_ids)-1; i>=0; i-- {
+		if ii, err := strconv.Atoi(history_ids[i]); err == nil && ii < len(items) {
 			new_items = append(new_items, items[ii])
-		}
+		} 
 	}
+
 	xmlv.Channel.Items = new_items
 
 	if cacheControlAge != "" {
