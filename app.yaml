@@ -19,6 +19,9 @@ handlers:
   - url: /
     static_dir: public
 
+skip_files:
+  - webfront/.*
+
 env_variables:
    TARGET_FIELD: title
    REGEXP: .+

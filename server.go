@@ -48,8 +48,8 @@ var (
 )
 
 const (
-	cacheControlAge = "max-age=3600"
-	defaultDuration = "3600s"
+	cacheControlAge = "public, max-age=21600" // 3 * 3600
+	defaultDuration = "12h"
 )
 
 func (api Api) create(c echo.Context) error {
