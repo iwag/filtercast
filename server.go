@@ -23,6 +23,7 @@ type Api struct {
 
 type PostContent struct {
 	Url  string `form:"url" json:"url" binding:"required"`
+	PublishWay string `form:"publish_way" json:"publish_way"`
 	Date string
 }
 
@@ -59,6 +60,9 @@ func (api Api) create(c echo.Context) error {
 	var json PostContent
 	if c.Bind(&json) == nil {
 		log.Debugf(ctx, "post:%v", json)
+		if json.PublishWay == "" {
+			json.PublishWay = "firstout"
+		}
 
 		var xmlv Rss
 		var err error

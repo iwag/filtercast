@@ -15,6 +15,7 @@ type Content struct {
 	Id             string    `datastore:"-" goon:"id"`
 	Url            string    `datastore:"url"`
 	History        string    `datastore:"history"`
+	PublishWay     string    `datastore:"publish_way"`
 	CreatedAt      time.Time `datastore:"created_at"`
 	UpdatedAt      time.Time `datastore:"updated_at"`
 	LastLatestDate string    `datastore:"latest_date"`
@@ -64,6 +65,7 @@ func (db *ContentDb) GetAll(uid string, is_review bool, duration_s string, c con
 			Id:             w.Id,
 			Url:            w.Url,
 			History:        w.History,
+			PublishWay:			w.PublishWay,
 			CreatedAt:      w.CreatedAt,
 			UpdatedAt:      w.UpdatedAt,
 			LastLatestDate: w.LastLatestDate,
@@ -90,6 +92,9 @@ func (db *ContentDb) Add(uid string, w PostContent, c context.Context) (string, 
 	if w.Url == "" {
 		return "", errors.New("empty")
 	}
+	if w.PublishWay != "firstout" && w.PublishWay != "random" {
+		return "", errors.New("empty")		
+	}
 
 	key, err1 := db.GenId(w.Url, c)
 	if err1 != nil {
@@ -103,6 +108,7 @@ func (db *ContentDb) Add(uid string, w PostContent, c context.Context) (string, 
 		Id:             key,
 		Url:            w.Url,
 		History:        "",
+		PublishWay:			w.PublishWay, // "firstout or random"
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(), // todo should be null
 		LastLatestDate: w.Date,
@@ -139,6 +145,7 @@ func (db *ContentDb) Edit(id string, ew EditContent, c context.Context) (Content
 		Id:             id,
 		Url:            w.Url,
 		History:        ew.History,
+		PublishWay:			w.PublishWay,
 		CreatedAt:      w.CreatedAt,
 		UpdatedAt:      time.Now(),
 		LastLatestDate: w.LastLatestDate,
