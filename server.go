@@ -27,8 +27,8 @@ type PostContent struct {
 }
 
 type EditContent struct {
-	Kind           string
-	History        string
+	Kind    string
+	History string
 }
 
 type RssStatus struct {
@@ -136,7 +136,7 @@ func (api Api) getRss(c echo.Context) error {
 		// add picked up item to history
 		added := stored.History + strconv.Itoa(p) + ","
 		edited := EditContent{
-			Kind: "history",
+			Kind:    "history",
 			History: added,
 		}
 		if _, err := api.db.Edit(stored.Id, edited, ctx); err != nil {
@@ -146,10 +146,10 @@ func (api Api) getRss(c echo.Context) error {
 
 	// insert all items u already showed
 	history_ids := strings.Split(stored.History, ",")
-	for i := len(history_ids)-1; i>=0; i-- {
+	for i := len(history_ids) - 1; i >= 0; i-- {
 		if ii, err := strconv.Atoi(history_ids[i]); err == nil && ii < len(items) {
 			new_items = append(new_items, items[ii])
-		} 
+		}
 	}
 
 	xmlv.Channel.Items = new_items

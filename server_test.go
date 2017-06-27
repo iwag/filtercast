@@ -1,17 +1,17 @@
 package main
 
 import (
-	"golang.org/x/net/context"
-	"google.golang.org/appengine/aetest"
-	"testing"
 	"errors"
 	"github.com/labstack/echo"
+	"golang.org/x/net/context"
+	"google.golang.org/appengine/aetest"
 	"net/http/httptest"
+	"testing"
 )
 
 type (
 	TestNormalClient struct{}
-	TestErrorClient struct{}
+	TestErrorClient  struct{}
 )
 
 func (c TestNormalClient) GetRss(ctx context.Context, url string) (Rss, error) {
