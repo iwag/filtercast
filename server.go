@@ -115,18 +115,12 @@ func (api Api) getRss(c echo.Context) error {
 		return c.XML(http.StatusBadRequest, "")
 	}
 
-	items := []Item{}
-	append_ := false
-	for _, it := range xmlv.Channel.Items {
-		if stored.LastLatestDate == it.PubDate {
-			append_ = true
-		} else if append_ {
-			items = append(items, it)
-		}
-	}
+	history_ids := strings.Split(stored.History, ",")
+
+
 	// TODO use copy(items[:i], items)
 
-	new_items := []Item{}
+	items, new_items := xmlv.List(stored.LastLatestDate, history_ids)
 
 	d, err := time.ParseDuration(defaultDuration)
 	if err != nil {
@@ -145,14 +139,6 @@ func (api Api) getRss(c echo.Context) error {
 		}
 		if _, err := api.db.Edit(stored.Id, edited, ctx); err != nil {
 			return c.JSON(http.StatusBadRequest, Status{Status: "edited error"})
-		}
-	}
-
-	// insert all items u already showed
-	history_ids := strings.Split(stored.History, ",")
-	for i := len(history_ids) - 1; i >= 0; i-- {
-		if ii, err := strconv.Atoi(history_ids[i]); err == nil && ii < len(items) {
-			new_items = append(new_items, items[ii])
 		}
 	}
 

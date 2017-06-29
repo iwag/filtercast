@@ -4,6 +4,7 @@ import(
 	"bytes"
 	"encoding/xml"
 	"net/http"
+	"strconv"
 	"google.golang.org/appengine/urlfetch"
 	"google.golang.org/appengine/log"
 	"golang.org/x/net/context"
@@ -68,4 +69,28 @@ func (c RssClient) GetRss(ctx context.Context, url string) (Rss, error) {
 	}
 
 	return xmlv, nil
+}
+
+func (rss Rss) List(lastDate string, history_ids []string) ([]Item, []Item) {
+	items := []Item{}
+	append_ := false
+	for _, it := range rss.Channel.Items {
+		if lastDate == it.PubDate {
+			append_ = true
+		} else if append_ {
+			items = append(items, it)
+		}
+	}
+	// TODO use copy(items[:i], items)
+
+	new_items := []Item{}
+
+	for i := len(history_ids) - 1; i >= 0; i-- {
+		if ii, err := strconv.Atoi(history_ids[i]); err == nil && ii < len(items) {
+			new_items = append(new_items, items[ii])
+		}
+	}
+
+
+	return items, new_items
 }
