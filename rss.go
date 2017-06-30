@@ -71,7 +71,7 @@ func (c RssClient) GetRss(ctx context.Context, url string) (Rss, error) {
 	return xmlv, nil
 }
 
-func (rss Rss) List(lastDate string, history_ids []string) ([]Item, []Item) {
+func (rss Rss) ListBeforeDate(lastDate string) []Item {
 	items := []Item{}
 	append_ := false
 	for _, it := range rss.Channel.Items {
@@ -82,7 +82,10 @@ func (rss Rss) List(lastDate string, history_ids []string) ([]Item, []Item) {
 		}
 	}
 	// TODO use copy(items[:i], items)
+	return items
+}
 
+func (rss Rss) ListFromHistory(history_ids []string) []Item {
 	new_items := []Item{}
 
 	for i := len(history_ids) - 1; i >= 0; i-- {
@@ -91,6 +94,5 @@ func (rss Rss) List(lastDate string, history_ids []string) ([]Item, []Item) {
 		}
 	}
 
-
-	return items, new_items
+	return new_items
 }
