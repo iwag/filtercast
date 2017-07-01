@@ -121,7 +121,7 @@ func (api Api) getRss(c echo.Context) error {
 	// TODO use copy(items[:i], items)
 
 	items := xmlv.ListBeforeDate(stored.LastLatestDate)
-	new_items := xmlv.ListFromHistory(history_ids)
+	new_items, _ := xmlv.ListFromHistory(history_ids)
 
 	d, err := time.ParseDuration(defaultDuration)
 	if err != nil {

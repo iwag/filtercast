@@ -4,7 +4,6 @@ import(
 	"bytes"
 	"encoding/xml"
 	"net/http"
-	"strconv"
 	"google.golang.org/appengine/urlfetch"
 	"google.golang.org/appengine/log"
 	"golang.org/x/net/context"
@@ -85,14 +84,18 @@ func (rss Rss) ListBeforeDate(lastDate string) []Item {
 	return items
 }
 
-func (rss Rss) ListFromHistory(history_ids []string) []Item {
+func (rss Rss) ListFromHistory(history_ids []string) ([]Item, []Item) {
 	new_items := []Item{}
+	remainder := []Item{}
 
-	for i := len(history_ids) - 1; i >= 0; i-- {
-		if ii, err := strconv.Atoi(history_ids[i]); err == nil && ii < len(items) {
-			new_items = append(new_items, items[ii])
+	for _, it := range rss.Channel.Items {
+		if true { // contain i == strconv.Atoi(history_ids[i]) {
+			new_items = append(new_items, it)
+		} else {
+			remainder = append(remainder , it)
 		}
 	}
 
-	return new_items
+	return new_items, remainder
 }
+
