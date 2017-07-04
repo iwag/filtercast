@@ -48,12 +48,12 @@ type (
 
 
 type Client interface {
-    GetRss(context.Context, string) (Rss, error)
+    GetRss(context.Context, string, string) (Rss, error)
 }
 
 type RssClient struct{}
 
-func (c RssClient) GetRss(ctx context.Context, url string) (Rss, error) {
+func (c RssClient) GetRss(ctx context.Context, url string, lastDate string) (Rss, error) {
 	resp, err := urlfetch.Client(ctx).Get(url)
 	if err != nil {
 		log.Errorf(ctx, err.Error(), http.StatusInternalServerError)
@@ -62,12 +62,16 @@ func (c RssClient) GetRss(ctx context.Context, url string) (Rss, error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
 
-	var xmlv Rss
-	if err := xml.Unmarshal([]byte(buf.String()), &xmlv); err != nil {
+	var rssv Rss
+	if err := xml.Unmarshal([]byte(buf.String()), &rssv); err != nil {
 		return Rss{}, err
 	}
 
-	return xmlv, nil
+	if lastDate != "" {
+		rssv.Channel.Items = rssv.ListBeforeDate(lastDate)
+	}
+
+	return rssv, nil
 }
 
 func (rss Rss) ListBeforeDate(lastDate string) []Item {

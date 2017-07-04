@@ -64,18 +64,18 @@ func (api Api) create(c echo.Context) error {
 			json.PublishWay = "firstout"
 		}
 
-		var xmlv Rss
+		var rssv Rss
 		var err error
-		if xmlv, err = api.client.GetRss(ctx, json.Url); err != nil {
+		if rssv, err = api.client.GetRss(ctx, json.Url, ""); err != nil {
 			return c.XML(http.StatusBadRequest, Status{Status: "couldn't request"})
 		}
-		if len(xmlv.Channel.Items) <= 0 {
+		if len(rssv.Channel.Items) <= 0 {
 			return c.XML(http.StatusBadRequest, Status{Status: "couldn't find rss"})
 		}
-		if xmlv.Channel.Items[0].PubDate == "" {
+		if rssv.Channel.Items[0].PubDate == "" {
 			return c.XML(http.StatusBadRequest, Status{Status: "couldn't find pubDate in latest item"})
 		}
-		json.Date = xmlv.Channel.Items[0].PubDate
+		json.Date = rssv.Channel.Items[0].PubDate
 
 		if id, err := api.db.Add("", json, ctx); err != nil {
 			log.Debugf(ctx, "create:%v", err)
@@ -102,7 +102,7 @@ func (api Api) get(c echo.Context) error {
 
 func (api Api) getRss(c echo.Context) error {
 	ctx := appengine.NewContext(c.Request())
-	var xmlv Rss
+	var rssv Rss
 	var err error
 	var stored Content
 
@@ -111,17 +111,14 @@ func (api Api) getRss(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
 	}
 
-	if xmlv, err = api.client.GetRss(ctx, stored.Url); err != nil {
+	if rssv, err = api.client.GetRss(ctx, stored.Url, stored.LastLatestDate); err != nil {
 		return c.XML(http.StatusBadRequest, "")
 	}
 
 	history_ids := strings.Split(stored.History, ",")
 
-
-	// TODO use copy(items[:i], items)
-
-	items := xmlv.ListBeforeDate(stored.LastLatestDate)
-	new_items, _ := xmlv.ListFromHistory(history_ids)
+	items := rssv.Channel.Items
+	new_items, _ := rssv.ListFromHistory(history_ids)
 
 	d, err := time.ParseDuration(defaultDuration)
 	if err != nil {
@@ -143,14 +140,14 @@ func (api Api) getRss(c echo.Context) error {
 		}
 	}
 
-	xmlv.Channel.Items = new_items
+	rssv.Channel.Items = new_items
 
 	c.Response().Header().Set("Content-Type", "application/rss+xml; charset=UTF-8")
 	if cacheControlAge != "" {
 		c.Response().Header().Set("Cache-Control", cacheControlAge)
 	}
 
-	return c.XML(http.StatusOK, xmlv)
+	return c.XML(http.StatusOK, rssv)
 }
 
 func init() {
