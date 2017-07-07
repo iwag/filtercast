@@ -100,13 +100,43 @@ func (api Api) get(c echo.Context) error {
 	}
 }
 
+func (api Api) publish(c echo.Context) error {
+	ctx := appengine.NewContext(c.Request())
+	var rssv Rss
+	var err error
+	var stored Content
+
+	if stored, err = api.db.Get(c.Param("id"), ctx); err != nil {
+		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
+	}
+
+	if rssv, err = api.client.GetRss(ctx, stored.Url, stored.LastLatestDate); err != nil {
+		return c.XML(http.StatusBadRequest, "")
+	}
+
+	items := rssv.Channel.Items
+
+	// pick up
+	p := rand.Intn(len(items))
+	// add picked up item to history
+	added := stored.History + strconv.Itoa(p) + ","
+	edited := EditContent{
+		Kind:    "history",
+		History: added,
+	}
+	if _, err := api.db.Edit(stored.Id, edited, ctx); err != nil {
+		return c.JSON(http.StatusBadRequest, Status{Status: "edited error"})
+	}
+
+	return c.JSON(http.StatusOK, Status{Status: "ok"})
+}
+
 func (api Api) getRss(c echo.Context) error {
 	ctx := appengine.NewContext(c.Request())
 	var rssv Rss
 	var err error
 	var stored Content
 
-	log.Debugf(ctx, "get rss %v", c.Param("id"))
 	if stored, err = api.db.Get(c.Param("id"), ctx); err != nil {
 		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
 	}
@@ -177,6 +207,7 @@ func init() {
 		return c.JSON(http.StatusOK, Status{Status: "ok"})
 	})
 	g.GET("/:id", api.get)
+	g.GET("/publish", api.publish)
 
 	g2 := e.Group("/rss")
 	g2.GET("/:id/feed.rss", api.getRss)
