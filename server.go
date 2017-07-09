@@ -117,7 +117,13 @@ func (api Api) publish(c echo.Context) error {
 	items := rssv.Channel.Items
 
 	// pick up
-	p := rand.Intn(len(items))
+	var p = 0
+	if stored.PublishWay == "random" {
+		p = rand.Intn(len(items))
+	} else {
+		p = len(items) - len(strings.Split(stored.History, ",")) -1
+	}
+	
 	// add picked up item to history
 	added := stored.History + strconv.Itoa(p) + ","
 	edited := EditContent{
@@ -157,7 +163,13 @@ func (api Api) getRss(c echo.Context) error {
 
 	if time.Now().After(stored.UpdatedAt.Add(d)) {
 		// pick up
-		p := rand.Intn(len(items))
+		var p = 0
+		if stored.PublishWay == "random" {
+			p = rand.Intn(len(items))
+		} else {
+			p = len(items) - len(history_ids) -1
+		}
+
 		new_items = append(new_items, items[p])
 		// add picked up item to history
 		added := stored.History + strconv.Itoa(p) + ","

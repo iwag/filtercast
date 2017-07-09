@@ -15,7 +15,7 @@ type Content struct {
 	Id             string    `datastore:"-" goon:"id"`
 	Url            string    `datastore:"url"`
 	History        string    `datastore:"history"`
-	PublishWay     string    `datastore:"publish_way"`
+	PublishWay     string    `datastore:"publish_way"` // random or firstout
 	CreatedAt      time.Time `datastore:"created_at"`
 	UpdatedAt      time.Time `datastore:"updated_at"`
 	LastLatestDate string    `datastore:"latest_date"`
@@ -65,7 +65,7 @@ func (db *ContentDb) GetAll(uid string, is_review bool, duration_s string, c con
 			Id:             w.Id,
 			Url:            w.Url,
 			History:        w.History,
-			PublishWay:			w.PublishWay,
+			PublishWay:		w.PublishWay,
 			CreatedAt:      w.CreatedAt,
 			UpdatedAt:      w.UpdatedAt,
 			LastLatestDate: w.LastLatestDate,
