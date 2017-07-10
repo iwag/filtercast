@@ -22,9 +22,9 @@ type Api struct {
 }
 
 type PostContent struct {
-	Url  string `form:"url" json:"url" binding:"required"`
+	Url        string `form:"url" json:"url" binding:"required"`
 	PublishWay string `form:"publish_way" json:"publish_way"`
-	Date string
+	Date       string
 }
 
 type EditContent struct {
@@ -40,6 +40,7 @@ type RssStatus struct {
 
 type Status struct {
 	Status string
+	Debug  string
 }
 
 var (
@@ -49,7 +50,7 @@ var (
 )
 
 const (
-	cacheControlAge = "public, max-age=21600" // 3 * 3600
+	cacheControlAge = "max-age=21600" // 3 * 3600
 	defaultDuration = "12h"
 )
 
@@ -121,9 +122,9 @@ func (api Api) publish(c echo.Context) error {
 	if stored.PublishWay == "random" {
 		p = rand.Intn(len(items))
 	} else {
-		p = len(items) - len(strings.Split(stored.History, ",")) -1
+		p = len(items) - len(strings.Split(stored.History, ",")) - 1
 	}
-	
+
 	// add picked up item to history
 	added := stored.History + strconv.Itoa(p) + ","
 	edited := EditContent{
@@ -134,7 +135,7 @@ func (api Api) publish(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Status{Status: "edited error"})
 	}
 
-	return c.JSON(http.StatusOK, Status{Status: "ok"})
+	return c.JSON(http.StatusOK, Status{Status: "ok", Debug: added})
 }
 
 func (api Api) getRss(c echo.Context) error {
@@ -167,7 +168,7 @@ func (api Api) getRss(c echo.Context) error {
 		if stored.PublishWay == "random" {
 			p = rand.Intn(len(items))
 		} else {
-			p = len(items) - len(history_ids) -1
+			p = len(items) - len(strings.Split(stored.History, ",")) - 1
 		}
 
 		new_items = append(new_items, items[p])
@@ -219,7 +220,7 @@ func init() {
 		return c.JSON(http.StatusOK, Status{Status: "ok"})
 	})
 	g.GET("/:id", api.get)
-	g.GET("/publish", api.publish)
+	g.GET("/:id/publish", api.publish)
 
 	g2 := e.Group("/rss")
 	g2.GET("/:id/feed.rss", api.getRss)

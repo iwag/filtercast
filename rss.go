@@ -7,6 +7,7 @@ import(
 	"google.golang.org/appengine/urlfetch"
 	"google.golang.org/appengine/log"
 	"golang.org/x/net/context"
+	"strconv"
 )
 
 type (
@@ -92,10 +93,17 @@ func (rss Rss) ListFromHistory(history_ids []string) ([]Item, []Item) {
 	new_items := []Item{}
 	remainder := []Item{}
 
-	for _, it := range rss.Channel.Items {
-		if true { // contain i == strconv.Atoi(history_ids[i]) {
-			new_items = append(new_items, it)
-		} else {
+	for i, it := range rss.Channel.Items {
+		contain := false
+		for _, hs := range history_ids {
+			hi, err := strconv.Atoi(hs)
+			if err==nil && hi == i { // contain
+			    new_items = append(new_items, it)
+				contain = true
+				break
+			}
+		}
+		if !contain {
 			remainder = append(remainder , it)
 		}
 	}
