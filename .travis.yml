@@ -1,0 +1,13 @@
+language: go
+go:
+  - 1.7.x
+  - tip
+before_install:
+  - go get -v google.golang.org/appengine
+  - go get -v github.com/mjibson/goon
+  - go get -v github.com/labstack/echo
+script:
+  - go build -v .
+matrix:
+  allow_failures:
+    - go: tip
