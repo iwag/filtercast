@@ -1,4 +1,6 @@
-filter the cast
+[![Build Status](https://travis-ci.org/iwag/filtercast.svg?branch=master)](https://travis-ci.org/iwag/filtercast)
+
+A bunch of tweaks for podcast
 ====
 
 a tool for modifying Podcast RSS field.
