@@ -7,7 +7,7 @@ before_install:
   - go get -v github.com/mjibson/goon
   - go get -v github.com/labstack/echo
 script:
-  - go build -v .
+  - go build -v app.go server_standalone.go server.go rss.go db_goon.go
 matrix:
   allow_failures:
     - go: tip

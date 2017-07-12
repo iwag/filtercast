@@ -1,3 +1,4 @@
+// +build  appengine
 package main
 
 import (
@@ -193,16 +194,7 @@ func (api Api) getRss(c echo.Context) error {
 	return c.XML(http.StatusOK, rssv)
 }
 
-func init() {
-	targetField = os.Getenv("TARGET_FIELD")
-	if targetField == "" {
-		os.Exit(1)
-	}
-	matcher = regexp.MustCompile(os.Getenv("REGEXP"))
-	if matcher == nil {
-		os.Exit(1)
-	}
-
+func createMux() *echo.Echo {
 	api = Api{
 		client: RssClient{},
 		db:     ContentDb{},
@@ -225,5 +217,18 @@ func init() {
 	g2 := e.Group("/rss")
 	g2.GET("/:id/feed.rss", api.getRss)
 
-	http.Handle("/", e)
+	return e
 }
+
+func init() {
+	targetField = os.Getenv("TARGET_FIELD")
+	if targetField == "" {
+		os.Exit(1)
+	}
+	matcher = regexp.MustCompile(os.Getenv("REGEXP"))
+	if matcher == nil {
+		os.Exit(1)
+	}
+}
+
+
