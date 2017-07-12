@@ -26,17 +26,35 @@ class TopPage extends React.Component {
 
 }
 
+class Combobox extends React.Component {
+  render() {
+	  var items = this.props.combolist.map((item, i) => {
+		  return (<option key={i} value={item.key}>
+		  {item.name}
+		  </option>)
+	  });
+
+    return (
+      <select name={this.props.name} className="form-control">
+	  {items}
+      </select>
+    );
+  }
+}
+
 class Input extends React.Component {
+
 
   constructor(props) {
     super(props);
     this.state = {};
     this.handleSubmit = this.handleSubmit.bind(this);
     this.url = config.host + "/api/rss/new";
+    this.comboList = [{name: 'Random', key: 'random'},{name: 'Old to New', key: 'firstout'}];
   }
 
   componentDidMount() {
-    document.title = "タスクを登録";
+    document.title = "rssを登録";
     this.refs.url.focus();
   }
 
@@ -52,8 +70,14 @@ class Input extends React.Component {
 
   handleSubmit(e) {
     e.preventDefault();
+    var way = this.comboList[0].key;
+    for (let i of this.comboList) {
+      if (i.name == this.refs.form.publishway.value)
+        way = i.key;
+    }
     var v = {
-      url: this.refs.url.value
+      url: this.refs.url.value,
+      publish_way: way,
     };
     fetch(this.url, {
       method: "POST",
@@ -71,7 +95,7 @@ class Input extends React.Component {
 
   render() {
     return (
-      <form onSubmit={this.handleSubmit.bind(this)}>
+      <form onSubmit={this.handleSubmit.bind(this)} ref="form">
         <div className="mdl-textfield mdl-js-textfield" style={{
           display: "table-cell",
           padding: "5px 0px"
@@ -82,6 +106,7 @@ class Input extends React.Component {
             border: "1px solid rgba(0,0,0,.12)"
           }}></textarea>
         </div>
+        <Combobox name="publishway" ref="way" combolist={this.comboList} />
         <button type="submit" className="mdl-button mdl-js-button" style={{
           width: 100 + "pt"
         }}>Enter</button>
