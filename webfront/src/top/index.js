@@ -78,6 +78,7 @@ class Input extends React.Component {
     var v = {
       url: this.refs.url.value,
       publish_way: way,
+      duration: this.refs.time.value,
     };
     fetch(this.url, {
       method: "POST",
@@ -100,15 +101,25 @@ class Input extends React.Component {
           display: "table-cell",
           padding: "5px 0px"
         }}>
-          <textarea className="mdl-textfield__input" type="text" rows="1" ref="url" name="url" style={{
-            width: "320pt",
-            "font-size": 2 + "em",
+          RSS's URL:<textarea className="mdl-textfield__input" type="text" rows="1" ref="url" name="url" style={{
+            width: "520pt",
+            "font-size": 3 + "em",
             border: "1px solid rgba(0,0,0,.12)"
           }}></textarea>
+        </div><br />
+        <div className="mdl-textfield mdl-js-textfield" style={{
+          display: "table-cell",
+          padding: "5px 0px 1px 1px"
+        }}>
+        Duration:<textarea className="mdl-textfield__input" type="text" rows="1" ref="time" name="time" style={{
+          width: "180pt",
+          "font-size": 3 + "em",
+          border: "1px solid rgba(0,0,0,.12)"
+        }}></textarea> secs
         </div>
         <Combobox name="publishway" ref="way" combolist={this.comboList} />
         <button type="submit" className="mdl-button mdl-js-button" style={{
-          width: 100 + "pt"
+          width: 120 + "pt"
         }}>Enter</button>
       </form>
     );
