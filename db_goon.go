@@ -19,6 +19,7 @@ type Content struct {
 	CreatedAt      time.Time `datastore:"created_at"`
 	UpdatedAt      time.Time `datastore:"updated_at"`
 	LastLatestDate string    `datastore:"latest_date"`
+	Duration       string    `datastore:"duration"`
 }
 
 type ContentDb struct {
@@ -61,16 +62,8 @@ func (db *ContentDb) GetAll(uid string, is_review bool, duration_s string, c con
 
 	ws := []Content{}
 	for _, w := range contents {
-		v := Content{
-			Id:             w.Id,
-			Url:            w.Url,
-			History:        w.History,
-			PublishWay:		w.PublishWay,
-			CreatedAt:      w.CreatedAt,
-			UpdatedAt:      w.UpdatedAt,
-			LastLatestDate: w.LastLatestDate,
-		}
-		ws = append(ws, v)
+		// if wanna use custom filter, write here
+		ws = append(ws, w)
 	}
 
 	return ws, nil
@@ -93,7 +86,7 @@ func (db *ContentDb) Add(uid string, w PostContent, c context.Context) (string, 
 		return "", errors.New("empty")
 	}
 	if w.PublishWay != "firstout" && w.PublishWay != "random" {
-		return "", errors.New("empty")		
+		return "", errors.New("empty")
 	}
 
 	key, err1 := db.GenId(w.Url, c)
@@ -108,10 +101,11 @@ func (db *ContentDb) Add(uid string, w PostContent, c context.Context) (string, 
 		Id:             key,
 		Url:            w.Url,
 		History:        "",
-		PublishWay:			w.PublishWay, // "firstout or random"
+		PublishWay:     w.PublishWay, // "firstout or random"
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(), // todo should be null
 		LastLatestDate: w.Date,
+		Duration:       w.Duration,
 	}
 
 	if _, err := g.Put(&wg); err != nil {
@@ -145,10 +139,11 @@ func (db *ContentDb) Edit(id string, ew EditContent, c context.Context) (Content
 		Id:             id,
 		Url:            w.Url,
 		History:        ew.History,
-		PublishWay:		w.PublishWay,
+		PublishWay:     w.PublishWay,
 		CreatedAt:      w.CreatedAt,
 		UpdatedAt:      time.Now(),
 		LastLatestDate: w.LastLatestDate,
+		Duration:       w.Duration,
 	}
 
 	if _, err := g.Put(&wg); err != nil {

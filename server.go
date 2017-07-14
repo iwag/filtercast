@@ -26,6 +26,7 @@ type PostContent struct {
 	Url        string `form:"url" json:"url" binding:"required"`
 	PublishWay string `form:"publish_way" json:"publish_way"`
 	Date       string
+	Duration   string
 }
 
 type EditContent struct {
@@ -64,6 +65,9 @@ func (api Api) create(c echo.Context) error {
 		log.Debugf(ctx, "post:%v", json)
 		if json.PublishWay == "" {
 			json.PublishWay = "firstout"
+		}
+		if json.Duration == "" {
+			json.Duration = defaultDuration
 		}
 
 		var rssv Rss
@@ -158,7 +162,7 @@ func (api Api) getRss(c echo.Context) error {
 	items := rssv.Channel.Items
 	new_items, _ := rssv.ListFromHistory(history_ids)
 
-	d, err := time.ParseDuration(defaultDuration)
+	d, err := time.ParseDuration(stored.Duration)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Status{Status: "duration error"})
 	}
@@ -217,6 +221,8 @@ func createMux() *echo.Echo {
 	g2 := e.Group("/rss")
 	g2.GET("/:id/feed.rss", api.getRss)
 
+	http.Handle("/", e)
+
 	return e
 }
 
@@ -230,5 +236,3 @@ func init() {
 		os.Exit(1)
 	}
 }
-
-
