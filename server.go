@@ -55,6 +55,7 @@ var (
 const (
 	cacheControlAge = "max-age=21600" // 3 * 3600
 	defaultDuration = "12h"
+	HOST_URL = "https://tweakpods.appspot.com"
 )
 
 func (api Api) create(c echo.Context) error {
@@ -163,6 +164,11 @@ func (api Api) getRss(c echo.Context) error {
 	items := rssv.Channel.Items
 	new_items, _ := rssv.ListFromHistory(history_ids)
 
+	for i,it := range new_items {
+		new_items[i].Title = "(Rerun) " + it.Title
+		new_items[i].Description = "(Rerun) " + it.Description
+	}
+
 	d, err := time.ParseDuration(stored.Duration)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Status{Status: "duration error"})
@@ -177,6 +183,10 @@ func (api Api) getRss(c echo.Context) error {
 			p = len(items) - len(strings.Split(stored.History, ",")) - 1
 		}
 
+//		items[p].PubDate = time.Now().Format(time.RFC1123Z)
+		items[p].Title = "(Rerun) " + items[p].Title
+		items[p].Description = "(Rerun) " + items[p].Description
+
 		new_items = append(new_items, items[p])
 		// add picked up item to history
 		added := stored.History + strconv.Itoa(p) + ","
@@ -190,6 +200,7 @@ func (api Api) getRss(c echo.Context) error {
 	}
 
 	rssv.Channel.Items = new_items
+	rssv.Channel.Link = HOST_URL + "/rss" + stored.Id
 
 	c.Response().Header().Set("Content-Type", "application/rss+xml; charset=UTF-8")
 	if cacheControlAge != "" {
