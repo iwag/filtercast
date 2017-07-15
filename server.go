@@ -35,9 +35,10 @@ type EditContent struct {
 }
 
 type RssStatus struct {
-	Status string
-	Url    string `form:"url" json:"url" binding:"required"`
-	Id     string `form:"id" json:"id" binding:"required"`
+	Status  string
+	Url     string `form:"url" json:"url" binding:"required"`
+	Id      string `form:"id" json:"id" binding:"required"`
+	History string `form:"id" json:"history"`
 }
 
 type Status struct {
@@ -102,7 +103,7 @@ func (api Api) get(c echo.Context) error {
 	if rss, err := api.db.Get(c.Param("id"), ctx); err != nil {
 		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
 	} else {
-		return c.JSON(http.StatusOK, RssStatus{Status: "ok", Id: rss.Id, Url: rss.Url})
+		return c.JSON(http.StatusOK, RssStatus{Status: "ok", Id: rss.Id, Url: rss.Url, History: rss.History})
 	}
 }
 
