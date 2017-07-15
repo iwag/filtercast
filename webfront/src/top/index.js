@@ -101,7 +101,8 @@ class Input extends React.Component {
           display: "table-cell",
           padding: "5px 0px"
         }}>
-          RSS's URL:<textarea className="mdl-textfield__input" type="text" rows="1" ref="url" name="url" style={{
+          RSS's URL:<textarea className="mdl-textfield__input" type="text" rows="1" ref="url" name="url"
+          defaultValue="http://example.com/feed.rss" style={{
             width: "520pt",
             "font-size": 3 + "em",
             border: "1px solid rgba(0,0,0,.12)"
@@ -111,11 +112,12 @@ class Input extends React.Component {
           display: "table-cell",
           padding: "5px 0px 1px 1px"
         }}>
-        Duration:<textarea className="mdl-textfield__input" type="text" rows="1" ref="time" name="time" style={{
-          width: "180pt",
-          "font-size": 3 + "em",
-          border: "1px solid rgba(0,0,0,.12)"
-        }}></textarea> secs
+        Duration:
+        <input defaultValue="12h" type="text" ref="time" style={{
+                  width: "180pt",
+                  "font-size": 3 + "em",
+                  border: "1px solid rgba(0,0,0,.12)"
+                }}/>
         </div>
         <Combobox name="publishway" ref="way" combolist={this.comboList} />
         <button type="submit" className="mdl-button mdl-js-button" style={{
