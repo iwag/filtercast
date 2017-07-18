@@ -39,19 +39,11 @@ func (db *ContentDb) Get(key string, c context.Context) (Content, error) {
 	return w, nil
 }
 
-func (db *ContentDb) GetAll(uid string, is_review bool, duration_s string, c context.Context) ([]Content, error) {
+func (db *ContentDb) GetAll(max int, c context.Context) ([]Content, error) {
 
 	filter := datastore.NewQuery("Content")
 
-	if duration_s != "" {
-		_, err := time.ParseDuration(duration_s)
-		if err != nil {
-			log.Debugf(c, "%v duration:%v", err, duration_s)
-			return []Content{}, err
-		}
-	}
-
-	filter = filter.Order("-created_at").Limit(100).Offset(0)
+	filter = filter.Order("-created_at").Limit(max).Offset(0)
 
 	contents := []Content{}
 	g := goon.FromContext(c)

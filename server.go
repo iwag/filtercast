@@ -108,6 +108,17 @@ func (api Api) get(c echo.Context) error {
 	}
 }
 
+func (api Api) getAll(c echo.Context) error {
+	ctx := appengine.NewContext(c.Request())
+	//c.Response().Header().Add("Access-Control-Allow-Origin", "*")
+
+	if rsses, err := api.db.GetAll(100, ctx); err != nil {
+		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
+	} else {
+		return c.JSON(http.StatusOK, rsses)
+	}
+}
+
 func (api Api) publish(c echo.Context) error {
 	ctx := appengine.NewContext(c.Request())
 	var rssv Rss
@@ -229,6 +240,7 @@ func createMux() *echo.Echo {
 	})
 	g.GET("/:id", api.get)
 	g.GET("/:id/publish", api.publish)
+	g.GET("/all", api.getAll)
 
 	g2 := e.Group("/rss")
 	g2.GET("/:id/feed.rss", api.getRss)
