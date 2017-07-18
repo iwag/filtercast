@@ -11,6 +11,13 @@
 	"page": "./rss",
 	"data": {
 		"data": "GET /api/rss/id"
+	 }
+  },
+  {
+	"path": "/all",
+	"page": "./all",
+	"data": {
+		"data": "GET /api/rss/all"
 	}
   }
 ]
