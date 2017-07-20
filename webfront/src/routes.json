@@ -1,17 +1,15 @@
-[
-  {
+[{
     "path": "/",
     "page": "./top",
     "chunk": "main",
-    "data": {
-    }
+    "data": {}
   },
   {
-	"path": "/rss/:id",
-	"page": "./rss",
-	"data": {
-		"data": "GET /api/rss/id"
-	 }
+    "path": "/rss/:id",
+    "page": "./rss",
+    "data": {
+      "data": "GET /api/rss/id"
+    }
   },
   {
 	"path": "/all",
