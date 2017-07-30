@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package library;
+
+message Rss {
+  string id = 1;
+  string url = 2;
+}
+
+message GetRssRequest {
+  string id = 1;
+}
+
+message PutRssRequest {
+  string url = 1;
+}
+
+message QueryRssRequest {
+  string query = 1;
+}
+
+service RssService {
+  rpc PutRss(PutRssRequest) returns (Rss) {}
+  rpc GetRss(GetRssRequest) returns (Rss) {}
+  rpc QueryRss(QueryRssRequest) returns (stream Rss) {}
+}

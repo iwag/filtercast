@@ -10,11 +10,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
+
+	library "go/_proto/library"
+
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 )
 
 type Api struct {
@@ -55,7 +62,7 @@ var (
 const (
 	cacheControlAge = "max-age=21600" // 3 * 3600
 	defaultDuration = "12h"
-	HOST_URL = "https://tweakpods.appspot.com"
+	HOST_URL        = "https://tweakpods.appspot.com"
 )
 
 func (api Api) create(c echo.Context) error {
@@ -175,7 +182,7 @@ func (api Api) getRss(c echo.Context) error {
 	items := rssv.Channel.Items
 	new_items, _ := rssv.ListFromHistory(history_ids)
 
-	for i,it := range new_items {
+	for i, it := range new_items {
 		new_items[i].Title = "(Rerun) " + it.Title
 		new_items[i].Description = "(Rerun) " + it.Description
 	}
@@ -194,7 +201,7 @@ func (api Api) getRss(c echo.Context) error {
 			p = len(items) - len(strings.Split(stored.History, ",")) - 1
 		}
 
-//		items[p].PubDate = time.Now().Format(time.RFC1123Z)
+		//		items[p].PubDate = time.Now().Format(time.RFC1123Z)
 		items[p].Title = "(Rerun) " + items[p].Title
 		items[p].Description = "(Rerun) " + items[p].Description
 
@@ -245,7 +252,17 @@ func createMux() *echo.Echo {
 	g2 := e.Group("/rss")
 	g2.GET("/:id/feed.rss", api.getRss)
 
-	http.Handle("/", e)
+	http.Handle("/xxx", e)
+
+	grpcServer := grpc.NewServer()
+	library.RegisterRssServiceServer(grpcServer, &rssService{})
+
+	wrappedServer := grpcweb.WrapServer(grpcServer)
+	handler := func(resp http.ResponseWriter, req *http.Request) {
+		wrappedServer.ServeHTTP(resp, req)
+	}
+
+	http.Handle("/", http.HandlerFunc(handler))
 
 	return e
 }
@@ -259,4 +276,76 @@ func init() {
 	if matcher == nil {
 		os.Exit(1)
 	}
+}
+
+type rssService struct{}
+
+func (s *rssService) PutRss(ctx context.Context, putRequest *library.PutRssRequest) (*library.Rss, error) {
+	grpc.SendHeader(ctx, metadata.Pairs("Pre-Response-Metadata", "Is-sent-as-headers-unary"))
+	grpc.SetTrailer(ctx, metadata.Pairs("Post-Response-Metadata", "Is-sent-as-trailers-unary"))
+
+	var json PostContent
+	json.Url = putRequest.Url
+	if json.PublishWay == "" {
+		json.PublishWay = "firstout"
+	}
+	if json.Duration == "" {
+		json.Duration = defaultDuration
+	}
+
+	var rssv Rss
+	var err error
+	if rssv, err = api.client.GetRss(ctx, json.Url, ""); err != nil {
+		return nil, grpc.Errorf(codes.NotFound, "Rss could not be found")
+	}
+	if len(rssv.Channel.Items) <= 0 {
+		return nil, grpc.Errorf(codes.NotFound, "Rss could not be found")
+	}
+	if rssv.Channel.Items[0].PubDate == "" {
+		return nil, grpc.Errorf(codes.NotFound, "Rss could not be found")
+	}
+	json.Date = rssv.Channel.Items[0].PubDate
+
+	if id, err := api.db.Add("", json, ctx); err != nil {
+		log.Debugf(ctx, "create:%v", err)
+		return nil, grpc.Errorf(codes.NotFound, "Rss could not be found")
+	} else {
+		rss := library.Rss{
+			Id:  id,
+			Url: json.Url,
+		}
+		return &rss, nil
+	}
+}
+
+func (s *rssService) GetRss(ctx context.Context, rssQuery *library.GetRssRequest) (*library.Rss, error) {
+	grpc.SendHeader(ctx, metadata.Pairs("Pre-Response-Metadata", "Is-sent-as-headers-unary"))
+	grpc.SetTrailer(ctx, metadata.Pairs("Post-Response-Metadata", "Is-sent-as-trailers-unary"))
+
+	if stored, err := api.db.Get(rssQuery.Id, ctx); err == nil {
+		rss := library.Rss{
+			Id:  stored.Id,
+			Url: stored.Url,
+		}
+		return &rss, nil
+	}
+
+	return nil, grpc.Errorf(codes.NotFound, "Rss could not be found")
+}
+
+func (s *rssService) QueryRss(rssQuery *library.QueryRssRequest, stream library.RssService_QueryRssServer) error {
+	ctx := context.Background()
+	stream.SendHeader(metadata.Pairs("Pre-Response-Metadata", "Is-sent-as-headers-stream"))
+	if rsses, err := api.db.GetAll(100, ctx); err == nil {
+		for _, b := range rsses {
+			r := &library.Rss{
+				Id:  b.Id,
+				Url: b.Url,
+			}
+
+			stream.Send(r)
+		}
+	}
+	stream.SetTrailer(metadata.Pairs("Post-Response-Metadata", "Is-sent-as-trailers-stream"))
+	return nil
 }

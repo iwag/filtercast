@@ -3,6 +3,33 @@ import Layout from '../../components/Layout';
 import {Button, Grid, Icon, IconButton, Checkbox,Cell  } from 'react-mdl';
 import config from '../../components/Config';
 
+import {grpc, Code, Metadata} from "grpc-web-client";
+import {RssService} from "../../js/_proto/library/book_service_pb_service";
+import {QueryRssRequest, Rss, GetRssRequest} from "../../js/_proto/library/book_service_pb";
+
+
+const host = "http://localhost:8080";
+
+function getRss() {
+  const getRssRequest = new GetRssRequest();
+  getRssRequest.setId("111");
+  grpc.unary(RssService.GetRss, {
+    request: getRssRequest,
+    host: host,
+    onEnd: res => {
+      const { status, statusMessage, headers, message, trailers } = res;
+      console.log("getRss.onEnd.status", status, statusMessage);
+      console.log("getRss.onEnd.headers", headers);
+      if (status === Code.OK && message) {
+        console.log("getRss.onEnd.message", message.toObject());
+      }
+      console.log("getRss.onEnd.trailers", trailers);
+      // queryRss();
+    }
+  });
+}
+getRss();
+
 class UserRssPage extends React.Component {
 
   componentDidMount() {

@@ -2,17 +2,17 @@ runtime: go
 api_version: go1
 
 handlers:
-  - url: /api/.*
+  - url: /.*
     script: _go_app
 
-  - url: /(|top$)
-    static_files: public/index.html
-    upload: public/index.html
+#  - url: /(|top$)
+#    static_files: public/index.html
+#    upload: public/index.html
 
-  - url: /all
-    static_files: public/index.html
-    upload: public/index.html
-    login: admin
+#  - url: /all
+#    static_files: public/index.html
+#    upload: public/index.html
+#    login: admin
 
   - url: /rss/.+/feed.rss
     script: _go_app
@@ -21,8 +21,8 @@ handlers:
     static_files: public/index.html
     upload: public/index.html
 
-  - url: /
-    static_dir: public
+#  - url: /
+#    static_dir: public
 
 skip_files:
   - webfront/.*

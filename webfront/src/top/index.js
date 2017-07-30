@@ -6,6 +6,10 @@ import config from '../../components/Config';
 import 'whatwg-fetch';
 import history from '../history';
 
+import {grpc, Code, Metadata} from "grpc-web-client";
+import {RssService} from "../../js/_proto/library/book_service_pb_service";
+import {QueryRssRequest, Rss, PutRssRequest} from "../../js/_proto/library/book_service_pb";
+
 class TopPage extends React.Component {
 
   componentDidMount() {
@@ -68,6 +72,30 @@ class Input extends React.Component {
     }
   }
 
+
+  putRss(e) {
+    e.preventDefault();
+    
+    const host = "http://localhost:8080";
+    const putRssRequest = new PutRssRequest();
+    putRssRequest.setUrl(this.refs.url.value);
+    grpc.unary(RssService.PutRss, {
+      request: putRssRequest,
+      host: host,
+      onEnd: res => {
+        const { status, statusMessage, headers, message, trailers } = res;
+        console.log("getRss.onEnd.status", status, statusMessage);
+        console.log("getRss.onEnd.headers", headers);
+        if (status === Code.OK && message) {
+          console.log("getRss.onEnd.message", message.toObject());
+        }
+        console.log("getRss.onEnd.trailers", trailers);
+        // queryRss();
+      }
+    });
+  }
+
+
   handleSubmit(e) {
     e.preventDefault();
     var way = this.comboList[0].key;
@@ -96,7 +124,7 @@ class Input extends React.Component {
 
   render() {
     return (
-      <form onSubmit={this.handleSubmit.bind(this)} ref="form">
+      <form onSubmit={this.putRss.bind(this)} ref="form">
         <div className="mdl-textfield mdl-js-textfield" style={{
           display: "table-cell",
           padding: "5px 0px"

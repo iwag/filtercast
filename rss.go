@@ -55,6 +55,8 @@ type Client interface {
 type RssClient struct{}
 
 func (c RssClient) GetRss(ctx context.Context, url string, lastDate string) (Rss, error) {
+	log.Debugf(ctx, "get rss:%v", "aaa")
+
 	resp, err := urlfetch.Client(ctx).Get(url)
 	if err != nil {
 		log.Errorf(ctx, err.Error(), http.StatusInternalServerError)
@@ -110,4 +112,3 @@ func (rss Rss) ListFromHistory(history_ids []string) ([]Item, []Item) {
 
 	return new_items, remainder
 }
-
