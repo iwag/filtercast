@@ -72,7 +72,7 @@ func (db *ContentDb) GenId(content string, c context.Context) (string, error) {
 	return key, nil
 }
 
-func (db *ContentDb) Add(uid string, w PostContent, c context.Context) (string, error) {
+func (db *ContentDb) Add(w PostContent, c context.Context) (string, error) {
 
 	if w.Url == "" {
 		return "", errors.New("empty")
@@ -148,7 +148,7 @@ func (db *ContentDb) Edit(id string, ew EditContent, c context.Context) (Content
 	return w2, err
 }
 
-func (db *ContentDb) Delete(id string, uid string, c context.Context) error {
+func (db *ContentDb) Delete(id string, c context.Context) error {
 	g := goon.FromContext(c)
 
 	w := Content{

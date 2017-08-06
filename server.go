@@ -85,7 +85,7 @@ func (api Api) create(c echo.Context) error {
 		}
 		json.Date = rssv.Channel.Items[0].PubDate
 
-		if id, err := api.db.Add("", json, ctx); err != nil {
+		if id, err := api.db.Add(json, ctx); err != nil {
 			log.Debugf(ctx, "create:%v", err)
 			return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
 		} else {
