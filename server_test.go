@@ -10,16 +10,21 @@ import (
 )
 
 type (
-	TestNormalClient struct{}
-	TestErrorClient  struct{}
+	TestRssNormalClient struct{}
+	TestRssErrorClient  struct{}
+	TestNormalDb struct{}
 )
 
-func (c TestNormalClient) GetRss(ctx context.Context, url string) (Rss, error) {
+func (c TestRssNormalClient) GetRss(ctx context.Context, url string) (Rss, error) {
 	return Rss{}, nil
 }
 
-func (c TestErrorClient) GetRss(ctx context.Context, url string) (Rss, error) {
+func (c TestRssErrorClient) GetRss(ctx context.Context, url string) (Rss, error) {
 	return Rss{}, errors.New("errrrorrrr")
+}
+
+func (db TestNormalDb) Add(uid string, w PostContent, c context.Context) (string, error) {
+	return "", nil
 }
 
 func testNormal(t *testing.T) {
@@ -31,7 +36,7 @@ func testNormal(t *testing.T) {
 	defer done()
 
 	api = Api{
-		client: TestNormalClient{},
+		client: TestRssNormalClient{},
 	}
 
 	e := echo.New()
