@@ -1,12 +1,12 @@
 package main
 
-import(
+import (
 	"bytes"
 	"encoding/xml"
-	"net/http"
-	"google.golang.org/appengine/urlfetch"
-	"google.golang.org/appengine/log"
 	"golang.org/x/net/context"
+	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/urlfetch"
+	"net/http"
 	"strconv"
 )
 
@@ -47,9 +47,8 @@ type (
 	}
 )
 
-
 type Client interface {
-    GetRss(context.Context, string, string) (Rss, error)
+	GetRss(context.Context, string, string) (Rss, error)
 }
 
 type RssClient struct{}
@@ -97,17 +96,16 @@ func (rss Rss) ListFromHistory(history_ids []string) ([]Item, []Item) {
 		contain := false
 		for _, hs := range history_ids {
 			hi, err := strconv.Atoi(hs)
-			if err==nil && hi == i { // contain
-			    new_items = append(new_items, it)
+			if err == nil && hi == i { // contain
+				new_items = append(new_items, it)
 				contain = true
 				break
 			}
 		}
 		if !contain {
-			remainder = append(remainder , it)
+			remainder = append(remainder, it)
 		}
 	}
 
 	return new_items, remainder
 }
-
