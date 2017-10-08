@@ -1,5 +1,6 @@
 import React from 'react';
 import Layout from '../../components/Layout';
+import {Spinner} from 'react-mdl';
 import s from './styles.css';
 import {title, html} from './index.md';
 import config from '../../components/Config';
@@ -47,14 +48,14 @@ class Input extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {buttonDisabled:false};
     this.handleSubmit = this.handleSubmit.bind(this);
     this.url = config.host + "/api/rss/new";
     this.comboList = [{name: 'Random', key: 'random'},{name: 'Old to New', key: 'firstout'}];
   }
 
   componentDidMount() {
-    document.title = "rssを登録";
+    document.title = "Add a rss entry";
     this.refs.url.focus();
   }
 
@@ -69,6 +70,7 @@ class Input extends React.Component {
   }
 
   handleSubmit(e) {
+	this.setState({buttonDisabled: true});
     e.preventDefault();
     var way = this.comboList[0].key;
     for (let i of this.comboList) {
@@ -89,12 +91,15 @@ class Input extends React.Component {
       credentials: 'same-origin'
     }).then(this.checkStatus).then(r => r.json()).then(r => {
       history.push({pathname: "rss/" + r.id});
+	  this.setState({buttonDisabled: false});
     }).catch(e => {
       console.log('request failed', e);
+	  this.setState({buttonDisabled: false});
     });
   }
 
   render() {
+	  var spinner = this.state.buttonDisabled ? <Spinner /> : <div /> ;
     return (
       <form onSubmit={this.handleSubmit.bind(this)} ref="form">
         <div className="mdl-textfield mdl-js-textfield" style={{
@@ -112,17 +117,26 @@ class Input extends React.Component {
           display: "table-cell",
           padding: "5px 0px 1px 1px"
         }}>
-        Duration:
+        Duration to publish:
         <input defaultValue="12h" type="text" ref="time" style={{
                   width: "180pt",
                   "font-size": 3 + "em",
                   border: "1px solid rgba(0,0,0,.12)"
                 }}/>
         </div>
-        <Combobox name="publishway" ref="way" combolist={this.comboList} />
-        <button type="submit" className="mdl-button mdl-js-button" style={{
+        <div className="mdl-textfield mdl-js-textfield" style={{
+          display: "table-cell",
+          padding: "5px 0px 1px 1px"
+        }}>
+		A way to publish (Random/Old to New):
+        <Combobox name="publishway" ref="way" combolist={this.comboList} style={{
+			"font-size": 3 + "em"
+		  }} />
+		</div>
+        <button type="submit" className="mdl-button mdl-js-button  mdl-button--raised mdl-js-ripple-effect" disabled={this.buttonDisabled} style={{
           width: 120 + "pt"
-        }}>Enter</button>
+        }}>Add</button>
+		  {spinner}
       </form>
     );
   }
