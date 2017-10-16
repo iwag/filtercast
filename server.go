@@ -156,6 +156,10 @@ func (api Api) publish(c echo.Context) error {
 	return c.JSON(http.StatusOK, Status{Status: "ok", Debug: added})
 }
 
+func (api Api) publishAll(c echo.Context) error {
+	return c.JSON(http.StatusOK, Status{Status: "ok", Debug: ""})
+}
+
 func (api Api) getRss(c echo.Context) error {
 	ctx := appengine.NewContext(c.Request())
 	var rssv Rss
@@ -241,6 +245,7 @@ func createMux() *echo.Echo {
 	g.GET("/:id", api.get)
 	g.GET("/:id/publish", api.publish)
 	g.GET("/all", api.getAll)
+	g.GET("/all/publish", api.publishAll)
 
 	g2 := e.Group("/rss")
 	g2.GET("/:id/feed.rss", api.getRss)

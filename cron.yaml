@@ -1,0 +1,4 @@
+cron:
+- description: hourly updated
+  url: /rss/all/publish
+  schedule: every 3 hours
