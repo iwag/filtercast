@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -157,7 +158,55 @@ func (api Api) publish(c echo.Context) error {
 }
 
 func (api Api) publishAll(c echo.Context) error {
-	return c.JSON(http.StatusOK, Status{Status: "ok", Debug: ""})
+	ctx := appengine.NewContext(c.Request())
+	//c.Response().Header().Add("Access-Control-Allow-Origin", "*")
+
+	if rsses, err := api.db.GetAll(100, ctx); err != nil {
+		return c.JSON(http.StatusBadRequest, Status{Status: "parse error"})
+	} else {
+		var errcount = 0
+		for _, it := range rsses {
+			d, err := time.ParseDuration(it.Duration)
+			if err != nil {
+				errcount = errcount + 1
+				continue
+			}
+
+			if time.Now().Before(it.UpdatedAt.Add(d)) {
+				var rssv Rss
+				if rssv, err = api.client.GetRss(ctx, it.Url, it.LastLatestDate); err != nil {
+					errcount = errcount + 1
+					continue
+				}
+
+				items := rssv.Channel.Items
+
+				// pick up
+				var p = 0
+				if it.PublishWay == "random" {
+					p = rand.Intn(len(items))
+				} else {
+					p = len(items) - len(strings.Split(it.History, ",")) - 1
+				}
+
+				// add picked up item to history
+				added := it.History + strconv.Itoa(p) + ","
+				edited := EditContent{
+					Kind:    "history",
+					History: added,
+				}
+				if _, err := api.db.Edit(it.Id, edited, ctx); err != nil {
+					errcount = errcount + 1
+					continue
+				}
+			}
+		}
+		if errcount > 0 {
+			return c.JSON(http.StatusBadRequest, Status{Status: "error", Debug: fmt.Sprintf("%v", errcount)})
+		} else {
+			return c.JSON(http.StatusOK, Status{Status: "ok", Debug: ""})
+		}
+	}
 }
 
 func (api Api) getRss(c echo.Context) error {
