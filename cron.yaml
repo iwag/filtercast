@@ -1,4 +1,4 @@
 cron:
-- description: half daily updated
+- description: daily updated
   url: /api/rss/all/publish
-  schedule: every 12 hours
+  schedule: every 24 hours
