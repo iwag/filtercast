@@ -144,6 +144,10 @@ func (api Api) publish(c echo.Context) error {
 		p = len(items) - len(strings.Split(stored.History, ",")) - 1
 	}
 
+	if p >= len(items) || p < 0 {
+		return c.JSON(http.StatusInternalServerError, Status{Status: "server error", Debug: fmt.Sprintf("out of index items:%v p:%v", items, p)})
+	}
+
 	// add picked up item to history
 	added := stored.History + strconv.Itoa(p) + ","
 	edited := EditContent{
@@ -229,8 +233,8 @@ func (api Api) getRss(c echo.Context) error {
 	new_items, _ := rssv.ListFromHistory(history_ids)
 
 	for i, it := range new_items {
-		new_items[i].Title = "(Rerun) " + it.Title
-		new_items[i].Description = "(Rerun) " + it.Description
+		new_items[i].Title = "(Rebroadcast) " + it.Title
+		new_items[i].Description = "(Rebroadcast) " + it.Description
 	}
 
 	d, err := time.ParseDuration(stored.Duration)
@@ -246,10 +250,13 @@ func (api Api) getRss(c echo.Context) error {
 		} else {
 			p = len(items) - len(strings.Split(stored.History, ",")) - 1
 		}
+		if p >= len(items) || p < 0 {
+			return c.JSON(http.StatusInternalServerError, Status{Status: "server error", Debug: fmt.Sprintf("out of index items:%v p:%v", items, p)})
+		}
 
 		//		items[p].PubDate = time.Now().Format(time.RFC1123Z)
-		items[p].Title = "(Rerun) " + items[p].Title
-		items[p].Description = "(Rerun) " + items[p].Description
+		items[p].Title = "(Rebroadcast) " + items[p].Title
+		items[p].Description = "(Rebroadcast) " + items[p].Description
 
 		new_items = append(new_items, items[p])
 		// add picked up item to history
