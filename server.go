@@ -136,6 +136,10 @@ func (api Api) publish(c echo.Context) error {
 
 	items := rssv.Channel.Items
 
+	if len(items) <= len(strings.Split(stored.History, ",")) {
+		return c.JSON(http.StatusOK, Status{Status: "none"})
+	}
+
 	// pick up
 	var p = 0
 	if stored.PublishWay == "random" {
@@ -145,7 +149,7 @@ func (api Api) publish(c echo.Context) error {
 	}
 
 	if p >= len(items) || p < 0 {
-		return c.JSON(http.StatusInternalServerError, Status{Status: "server error", Debug: fmt.Sprintf("out of index items:%v p:%v", items, p)})
+		return c.JSON(http.StatusInternalServerError, Status{Status: "server error"}) // Debug: fmt.Sprintf("out of index items:%v p:%v", items, p)})
 	}
 
 	// add picked up item to history
@@ -242,7 +246,7 @@ func (api Api) getRss(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Status{Status: "duration error"})
 	}
 
-	if time.Now().After(stored.UpdatedAt.Add(d)) {
+	if time.Now().After(stored.UpdatedAt.Add(d)) && len(items) <= len(strings.Split(stored.History, ",")) {
 		// pick up
 		var p = 0
 		if stored.PublishWay == "random" {
@@ -251,7 +255,7 @@ func (api Api) getRss(c echo.Context) error {
 			p = len(items) - len(strings.Split(stored.History, ",")) - 1
 		}
 		if p >= len(items) || p < 0 {
-			return c.JSON(http.StatusInternalServerError, Status{Status: "server error", Debug: fmt.Sprintf("out of index items:%v p:%v", items, p)})
+			return c.JSON(http.StatusInternalServerError, Status{Status: "server error"})
 		}
 
 		//		items[p].PubDate = time.Now().Format(time.RFC1123Z)
