@@ -1,4 +1,0 @@
-cron:
-- description: daily updated
-  url: /api/rss/all/publish
-  schedule: every 24 hours
