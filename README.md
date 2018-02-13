@@ -1,5 +1,5 @@
 
-Very best tool for podcast
+Very best podcast tool
 ====
 
 Allow to rebroadcast/filter episodes of podcast by modifying RSS feed.
