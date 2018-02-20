@@ -2,7 +2,7 @@ package io.github.iwag.filtercast.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.iwag.filtercast.models.RSSEntity;
-import io.github.iwag.filtercast.repositories.TaskService;
+import io.github.iwag.filtercast.repositories.RSSService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +25,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(TaskController.class)
-public class TestTaskController {
+@WebMvcTest(RSSController.class)
+public class TestRSSController {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private TaskService taskService;
+    private RSSService RSSService;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -40,7 +40,7 @@ public class TestTaskController {
     public void createAndLoginShouldSuccess() throws Exception {
 
         {
-            when(taskService.createTask(any(RSSEntity.class))).thenReturn(Optional.of(111L));
+            when(RSSService.createEntity(any(RSSEntity.class))).thenReturn(Optional.of(111L));
             RSSEntity ue = new RSSEntity("0", "http://example.com", "0", "aaa", "2017/08/31",
                     "2017/08/31", "2017/08/31", "2017/08/31");
             String js = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(ue);
@@ -52,7 +52,7 @@ public class TestTaskController {
 
 //    @Test
 //    public void createShouldFail() throws Exception {
-//        when(taskService.createTask(any(RSSEntity.class))).thenReturn(null);
+//        when(RSSService.createEntity(any(RSSEntity.class))).thenReturn(null);
 //        this.mockMvc.perform(put("/task").contentType(MediaType.APPLICATION_JSON).content("{}"))
 //                .andDo(print()).andExpect(status().isBadRequest());
 //    }

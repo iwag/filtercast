@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class DatastoreService implements TaskService {
+public class DatastoreService implements RSSService {
 
-    private final static String KIND = "Task2";
+    private final static String KIND = "RSS";
 
     @Autowired
     com.google.appengine.api.datastore.DatastoreService datastore;
@@ -27,25 +27,25 @@ public class DatastoreService implements TaskService {
     }
 
     @Override
-    public Optional<Long> createTask(RSSEntity task) {
+    public Optional<Long> createEntity(RSSEntity entity) {
         Entity incTaskEntity = new Entity(KIND);
-        incTaskEntity.setProperty(RSSEntity.HISTORY, task.getHistory());
-        incTaskEntity.setProperty(RSSEntity.URL, task.getUrl());
-        incTaskEntity.setProperty(RSSEntity.PUBLISHWAY, task.getHistory());
-        incTaskEntity.setProperty(RSSEntity.CREATED, task.getCreated());
-        incTaskEntity.setProperty(RSSEntity.UPDATED, task.getUpdated());
-        incTaskEntity.setProperty(RSSEntity.LATESTDATE, task.getLatestdate());
-        incTaskEntity.setProperty(RSSEntity.DURATION, task.getDuration());
+        incTaskEntity.setProperty(RSSEntity.HISTORY, entity.getHistory());
+        incTaskEntity.setProperty(RSSEntity.URL, entity.getUrl());
+        incTaskEntity.setProperty(RSSEntity.PUBLISHWAY, entity.getHistory());
+        incTaskEntity.setProperty(RSSEntity.CREATED, entity.getCreated());
+        incTaskEntity.setProperty(RSSEntity.UPDATED, entity.getUpdated());
+        incTaskEntity.setProperty(RSSEntity.LATESTDATE, entity.getLatestdate());
+        incTaskEntity.setProperty(RSSEntity.DURATION, entity.getDuration());
 
         Key k = datastore.put(incTaskEntity);
         return Optional.of(k.getId());
     }
 
     @Override
-    public RSSEntity readEntity(Long taskId) {
+    public RSSEntity readEntity(Long id) {
         Entity entity = null;
         try {
-            entity = datastore.get(KeyFactory.createKey(KIND, taskId));
+            entity = datastore.get(KeyFactory.createKey(KIND, id));
         } catch (EntityNotFoundException e) {
             return null;
         }
@@ -53,23 +53,23 @@ public class DatastoreService implements TaskService {
     }
 
     @Override
-    public void updateEntity(RSSEntity task) {
-        Key key = KeyFactory.createKey(KIND, task.getId());
+    public void updateEntity(RSSEntity entity1) {
+        Key key = KeyFactory.createKey(KIND, entity1.getId());
         Entity entity = new Entity(key);
-        entity.setProperty(RSSEntity.HISTORY, task.getHistory());
-        entity.setProperty(RSSEntity.URL, task.getUrl());
-        entity.setProperty(RSSEntity.PUBLISHWAY, task.getPublishway());
-        entity.setProperty(RSSEntity.CREATED, task.getCreated());
-        entity.setProperty(RSSEntity.UPDATED, task.getUpdated());
-        entity.setProperty(RSSEntity.LATESTDATE, task.getLatestdate());
-        entity.setProperty(RSSEntity.DURATION, task.getDuration());
+        entity.setProperty(RSSEntity.HISTORY, entity1.getHistory());
+        entity.setProperty(RSSEntity.URL, entity1.getUrl());
+        entity.setProperty(RSSEntity.PUBLISHWAY, entity1.getPublishway());
+        entity.setProperty(RSSEntity.CREATED, entity1.getCreated());
+        entity.setProperty(RSSEntity.UPDATED, entity1.getUpdated());
+        entity.setProperty(RSSEntity.LATESTDATE, entity1.getLatestdate());
+        entity.setProperty(RSSEntity.DURATION, entity1.getDuration());
 
         datastore.put(entity);
     }
 
     @Override
-    public void deleteTask(Long taskId) {
-        Key key = KeyFactory.createKey(KIND, taskId);
+    public void deleteEntity(Long id) {
+        Key key = KeyFactory.createKey(KIND, id);
         datastore.delete(key);
     }
 
@@ -82,7 +82,7 @@ public class DatastoreService implements TaskService {
     }
 
     @Override
-    public List<RSSEntity> listTasks(String startCursorString) {
+    public List<RSSEntity> listEntities(String startCursorString) {
         FetchOptions fetchOptions = FetchOptions.Builder.withLimit(10);
         if (startCursorString != null && !startCursorString.equals("")) {
             fetchOptions.startCursor(Cursor.fromWebSafeString(startCursorString));
